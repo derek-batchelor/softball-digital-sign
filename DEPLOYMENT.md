@@ -39,23 +39,10 @@ az deployment group show `
 
 - `containerAppFqdn`: Backend API URL
 - `containerAppName`: For GitHub Actions
-- `containerAppPrincipalId`: Managed identity ID
-- `managedEnvironmentName`: For volume mount script
 - `staticWebAppHostname`: Frontend URL
-- `storageAccountName`: For volume mounts (authenticated via managed identity)
+- `storageAccountName`: Storage account for file shares
 
-## Configure Volume Mounts
-
-```powershell
-pwsh infra/scripts/mount-volumes.ps1 `
-  -SubscriptionId "<sub-id>" `
-  -ResourceGroupName "softball-dev-rg" `
-  -EnvironmentName "<managedEnvironmentName-from-outputs>" `
-  -ContainerAppName "<containerAppName-from-outputs>" `
-  -StorageAccountName "<storageAccountName-from-outputs>"
-```
-
-> **Security Note:** Volume mounts use the Container App's system-assigned managed identity with RBAC permissions. No storage keys required.
+> **Note:** Volume mounts and storage are automatically configured via Bicep. No manual script execution needed.
 
 ## Update CORS and Redeploy
 
@@ -64,9 +51,55 @@ pwsh infra/scripts/mount-volumes.ps1 `
 
 ## GitHub Actions Configuration
 
+### Create GitHub Container Registry (GHCR) Tokens
+
+#### For Azure Container Apps (Pull Images)
+
+This token allows Azure to pull your container images from GHCR. Add it to `infra/environments/dev.bicepparam`:
+
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Configure token:
+   - **Note:** "Azure GHCR Pull for softball-digital-sign"
+   - **Expiration:** 1 year (set a calendar reminder to rotate)
+   - **Select scopes:**
+     - `read:packages` (to download container images)
+4. Click "Generate token" and copy it immediately
+5. Add to `infra/environments/dev.bicepparam`:
+   ```bicep
+   registryPassword: '<your-token-here>'
+   ```
+
+#### For Local Development (Push Images)
+
+Only needed if building and pushing images manually (not required for GitHub Actions):
+
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Configure token:
+   - **Note:** "GHCR Push for softball-digital-sign"
+   - **Expiration:** 90 days
+   - **Select scopes:**
+     - `write:packages` (to upload container images)
+     - `read:packages` (to download container images)
+4. Generate and save to environment variable:
+   ```powershell
+   $env:GHCR_TOKEN = "<your-token-here>"
+   ```
+
+> **Note:** GitHub Actions uses the automatic `GITHUB_TOKEN` which already has push permissions.
+
 ### Repository Secrets to Add
 
-**Backend Workflow (`.github/workflows/backend.yml`):**
+**Backend CI Workflow (`.github/workflows/backend-ci.yml`):**
+
+```
+GITHUB_TOKEN=<automatically-provided-by-github>
+```
+
+> Note: GITHUB_TOKEN is automatically available and used for GHCR authentication. No additional secrets needed for CI.
+
+**Backend CD Workflow (`.github/workflows/backend-cd.yml`):**
 
 ```
 AZURE_CLIENT_ID=<service-principal-client-id>
@@ -106,12 +139,7 @@ $sp = az ad sp create-for-rbac `
 # Add federated credential for main branch
 az ad app federated-credential create `
   --id $sp.appId `
-  --parameters '{
-    "name": "github-main",
-    "issuer": "https://token.actions.githubusercontent.com",
-    "subject": "repo:<owner>/<repo>:ref:refs/heads/main",
-    "audiences": ["api://AzureADTokenExchange"]
-  }'
+  --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<owner>/<repo>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'
 
 # Save these values as GitHub secrets:
 Write-Host "AZURE_CLIENT_ID: $($sp.appId)"

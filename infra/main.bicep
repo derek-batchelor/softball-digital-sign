@@ -97,6 +97,33 @@ resource env 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
+// Environment Storage for Azure Files
+resource envStorageData 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
+  parent: env
+  name: 'data-storage'
+  properties: {
+    azureFile: {
+      accountName: storage.name
+      accountKey: storage.listKeys().keys[0].value
+      shareName: dataShare.name
+      accessMode: 'ReadWrite'
+    }
+  }
+}
+
+resource envStorageMedia 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
+  parent: env
+  name: 'media-storage'
+  properties: {
+    azureFile: {
+      accountName: storage.name
+      accountKey: storage.listKeys().keys[0].value
+      shareName: mediaShare.name
+      accessMode: 'ReadWrite'
+    }
+  }
+}
+
 // Container App
 resource app 'Microsoft.App/containerApps@2024-03-01' = {
   name: containerAppName
@@ -112,6 +139,10 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         {
           name: 'ghcr-password'
           value: ghcrPassword
+        }
+        {
+          name: 'storage-account-key'
+          value: storage.listKeys().keys[0].value
         }
       ]
       registries: [
@@ -129,6 +160,18 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
       }
     }
     template: {
+      volumes: [
+        {
+          name: 'data'
+          storageType: 'AzureFile'
+          storageName: envStorageData.name
+        }
+        {
+          name: 'media'
+          storageType: 'AzureFile'
+          storageName: envStorageMedia.name
+        }
+      ]
       containers: [
         {
           name: 'api'
@@ -159,6 +202,16 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
               value: '/mounts/media'
             }
           ]
+          volumeMounts: [
+            {
+              volumeName: 'data'
+              mountPath: '/mounts/data'
+            }
+            {
+              volumeName: 'media'
+              mountPath: '/mounts/media'
+            }
+          ]
         }
       ]
       scale: {
@@ -182,8 +235,8 @@ resource swa 'Microsoft.Web/staticSites@2024-04-01' = {
 
 // RBAC: Grant Container App managed identity access to Storage Account
 resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storage.id, app.id, 'Storage File Data Privileged Contributor')
   scope: storage
+  name: guid(storage.id, app.id, 'Storage File Data Privileged Contributor')
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '69566ab7-960f-475b-8e7c-b3118f30c6bd') // Storage File Data Privileged Contributor
     principalId: app.identity.principalId

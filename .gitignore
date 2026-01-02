@@ -45,3 +45,7 @@ coverage/
 
 # Docker
 docker-compose.override.yml
+
+# Sensitive infrastructure parameters
+infra/environments/*.bicepparam
+outputs.json
