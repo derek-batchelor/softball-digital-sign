@@ -9,9 +9,10 @@ import {
   CreateSignageContentDto,
   UpdateSignageContentDto,
 } from '@shared/types';
+import { config } from '../config';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${config.apiUrl}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
