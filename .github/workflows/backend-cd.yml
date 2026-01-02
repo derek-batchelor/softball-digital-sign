@@ -1,0 +1,56 @@
+name: Backend CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/server/**'
+      - 'shared/**'
+      - 'docker/server/**'
+      - '.github/workflows/backend-cd.yml'
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (default: latest)'
+        required: false
+        default: 'latest'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/softball-digital-sign-server
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Update Container App Image
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            IMAGE_TAG="${{ github.event.inputs.image_tag || 'latest' }}"
+            az containerapp update \
+              --name ${{ secrets.AZURE_CONTAINERAPP_NAME }} \
+              --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+              --image ${{ env.IMAGE_NAME }}:${IMAGE_TAG}
+
+      - name: Verify deployment
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az containerapp revision list \
+              --name ${{ secrets.AZURE_CONTAINERAPP_NAME }} \
+              --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+              --query "[0].{name:name,active:properties.active,createdTime:properties.createdTime,image:properties.template.containers[0].image}" \
+              --output table
