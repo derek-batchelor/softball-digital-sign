@@ -1,0 +1,53 @@
+{
+  "name": "@softball-signage/server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NestJS backend for softball digital signage",
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "start": "nest start",
+    "dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.11",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.11",
+    "@nestjs/platform-express": "^11.1.11",
+    "@nestjs/platform-socket.io": "^11.1.11",
+    "@nestjs/schedule": "^6.1.0",
+    "@nestjs/serve-static": "^5.0.4",
+    "@nestjs/typeorm": "^11.0.0",
+    "@nestjs/websockets": "^11.1.11",
+    "better-sqlite3": "^11.8.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "multer": "^1.4.5-lts.1",
+    "reflect-metadata": "^0.1.14",
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.6.1",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.14",
+    "@nestjs/schematics": "^11.0.9",
+    "@nestjs/testing": "^11.1.11",
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^22.10.6",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.4.2",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "softball-digital-sign",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Digital signage system for softball with schedule and player stats",
+  "workspaces": [
+    "src/client",
+    "src/server",
+    "shared/types"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm run dev --workspace=src/server",
+    "dev:client": "npm run dev --workspace=src/client",
+    "build": "npm run build --workspaces",
+    "build:server": "npm run build --workspace=src/server",
+    "build:client": "npm run build --workspace=src/client",
+    "start": "npm run start --workspace=src/server",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "concurrently": "^8.2.2",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

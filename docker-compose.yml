@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: docker/server/Dockerfile
+    container_name: softball-signage-server
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_PATH=/app/data/softball-signage.db
+      - MEDIA_PATH=/app/media
+      - CORS_ORIGIN=*
+    volumes:
+      - softball-signage-data:/app/data
+      - softball-signage-media:/app/media
+    networks:
+      - softball-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:3000/api/signage/active', (r) => process.exit(r.statusCode === 200 ? 0 : 1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  client:
+    build:
+      context: .
+      dockerfile: docker/client/Dockerfile
+    container_name: softball-signage-client
+    ports:
+      - '80:80'
+    depends_on:
+      - server
+    networks:
+      - softball-network
+    restart: unless-stopped
+
+networks:
+  softball-network:
+    driver: bridge
+
+volumes:
+  softball-signage-data:
+    name: softball-signage-data
+  softball-signage-media:
+    name: softball-signage-media

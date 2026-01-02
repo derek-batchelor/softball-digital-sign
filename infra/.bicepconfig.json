@@ -1,0 +1,10 @@
+{
+  "experimentalFeaturesEnabled": {
+    "symbolicNameCodegen": true
+  },
+  "moduleAliases": {
+    "br": {
+      "public": "br:public"
+    }
+  }
+}
