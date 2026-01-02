@@ -11,8 +11,10 @@ param containerImage = 'ghcr.io/OWNER/softball-digital-sign-server:latest'
 param ghcrUsername = 'OWNER'
 param ghcrPassword = 'REPLACE_WITH_GHCR_TOKEN'
 
-// Allow CORS from the Static Web App default hostname (update after first deploy if needed)
-param corsOrigin = 'https://softball-digisign-swa-eastus.azurestaticapps.net'
+// Allow CORS from the Static Web App (wildcard to support preview environments)
+// Pattern: https://proud-pond-094ce810f.eastus2.4.azurestaticapps.net (production)
+//          https://proud-pond-094ce810f-1.eastus2.4.azurestaticapps.net (preview)
+param corsOrigin = 'https://proud-pond-094ce810f.eastus2.4.azurestaticapps.net,https://proud-pond-094ce810f-1.eastus2.4.azurestaticapps.net,https://proud-pond-094ce810f-2.eastus2.4.azurestaticapps.net,https://proud-pond-094ce810f-3.eastus2.4.azurestaticapps.net'
 
 // SWA SKU
 param swaSku = 'Free'
