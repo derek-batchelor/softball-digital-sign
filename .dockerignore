@@ -1,0 +1,53 @@
+# Dependencies
+node_modules
+npm-debug.log*
+package-lock.json
+
+# Build outputs
+dist
+build
+.next
+src/client/dist
+src/server/dist
+
+# Development
+.git
+.gitignore
+.vscode
+.idea
+*.log
+
+# Local data
+local/
+*.db
+*.db-shm
+*.db-wal
+
+# Docker files
+docker-compose.yml
+docker-compose.*.yml
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage
+.nyc_output
+test/
+tests/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+

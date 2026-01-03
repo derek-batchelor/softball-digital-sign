@@ -1,0 +1,82 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev:server"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outputCapture": "std",
+      "presentation": {
+        "hidden": false,
+        "group": "server",
+        "order": 1
+      }
+    },
+    {
+      "name": "Debug Client",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/src/client",
+      "sourceMaps": true,
+      "presentation": {
+        "hidden": false,
+        "group": "client",
+        "order": 2
+      }
+    },
+    {
+      "name": "Debug Full Stack",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outputCapture": "std",
+      "serverReadyAction": {
+        "pattern": "Local:.*http://localhost:5173",
+        "uriFormat": "http://localhost:5173",
+        "action": "openExternally"
+      },
+      "presentation": {
+        "hidden": false,
+        "group": "fullstack",
+        "order": 3
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Client & Server",
+      "configurations": [
+        "Debug Server",
+        "Debug Client"
+      ],
+      "presentation": {
+        "hidden": false,
+        "group": "fullstack",
+        "order": 1
+      },
+      "stopAll": true
+    }
+  ]
+}
