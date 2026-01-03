@@ -1,4 +1,5 @@
 import { Player } from '@shared/types';
+import { config } from '../../config';
 
 interface PlayerStatsCardProps {
   player: Player | null | undefined;
@@ -56,7 +57,7 @@ export const PlayerStatsCard = ({ player, photoPath, isWeekendWarrior }: PlayerS
             {(photoPath || player?.photoPath) && (
               <img
                 key={`player-photo-${player.id}`}
-                src={photoPath || player?.photoPath}
+                src={`${config.apiUrl}${photoPath || player?.photoPath}`}
                 alt={`${player?.firstName} ${player?.lastName}`}
                 className="w-72 h-72 rounded-3xl object-cover shadow-xl mb-4"
               />

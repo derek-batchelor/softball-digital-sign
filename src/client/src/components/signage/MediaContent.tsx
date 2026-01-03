@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { config } from '../../config';
 
 interface MediaContentProps {
   filePath: string;
@@ -34,11 +35,15 @@ export const MediaContent = ({
   return (
     <div className="w-full h-screen bg-black flex flex-col items-center justify-center">
       {type === 'image' ? (
-        <img src={filePath} alt={title} className="max-w-full max-h-full object-contain" />
+        <img
+          src={`${config.apiUrl}${filePath}`}
+          alt={title}
+          className="max-w-full max-h-full object-contain"
+        />
       ) : (
         <video
           ref={videoRef}
-          src={filePath}
+          src={`${config.apiUrl}${filePath}`}
           autoPlay
           loop
           muted
