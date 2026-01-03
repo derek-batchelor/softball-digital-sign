@@ -1,14 +1,6 @@
 name: Backend CD
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/server/**'
-      - 'shared/**'
-      - 'docker/server/**'
-      - '.github/workflows/backend-cd.yml'
   workflow_dispatch:
     inputs:
       image_tag:

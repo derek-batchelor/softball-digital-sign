@@ -109,18 +109,25 @@ export const useContentRotation = ({ content, fallbackContent }: ContentRotation
 
         // Preload videos by creating hidden video element
         if (nextContent?.filePath && nextContent.contentType === 'VIDEO') {
-          const video = document.createElement('video');
-          video.src = nextContent.filePath;
-          video.preload = 'auto';
-          video.muted = true;
-          video.style.display = 'none';
-          document.body.appendChild(video);
+          const videoId = `preload-video-${nextIndex}`;
+          let video = document.getElementById(videoId) as HTMLVideoElement;
 
-          // Remove after metadata loads
-          const handleLoaded = () => {
-            setTimeout(() => video.remove(), 100);
-          };
-          video.addEventListener('loadedmetadata', handleLoaded);
+          // Only create if it doesn't already exist
+          if (!video) {
+            video = document.createElement('video');
+            video.id = videoId;
+            video.src = nextContent.filePath;
+            video.preload = 'auto';
+            video.muted = true;
+            video.style.display = 'none';
+            document.body.appendChild(video);
+
+            // Remove after metadata loads
+            const handleLoaded = () => {
+              setTimeout(() => video.remove(), 100);
+            };
+            video.addEventListener('loadedmetadata', handleLoaded, { once: true });
+          }
         }
       }
     };

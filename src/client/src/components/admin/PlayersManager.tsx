@@ -28,18 +28,18 @@ export const PlayersManager = () => {
   const [filterText, setFilterText] = useState('');
 
   // Calculate last weekend (Saturday and Sunday)
-  const getLastWeekend = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const lastSaturday = new Date(today);
-    lastSaturday.setDate(today.getDate() - dayOfWeek - 1);
-    const lastSunday = new Date(lastSaturday);
-    lastSunday.setDate(lastSaturday.getDate() + 1);
-    return {
-      start: lastSaturday.toISOString().split('T')[0],
-      end: lastSunday.toISOString().split('T')[0],
-    };
-  };
+  // const getLastWeekend = () => {
+  //   const today = new Date();
+  //   const dayOfWeek = today.getDay();
+  //   const lastSaturday = new Date(today);
+  //   lastSaturday.setDate(today.getDate() - dayOfWeek - 1);
+  //   const lastSunday = new Date(lastSaturday);
+  //   lastSunday.setDate(lastSaturday.getDate() + 1);
+  //   return {
+  //     start: lastSaturday.toISOString().split('T')[0],
+  //     end: lastSunday.toISOString().split('T')[0],
+  //   };
+  // };
 
   const { data: players, isLoading } = useQuery({
     queryKey: ['players'],
@@ -743,7 +743,7 @@ export const PlayersManager = () => {
                     <input
                       type="date"
                       name="statsStartDate"
-                      defaultValue={getLastWeekend().start}
+                      // defaultValue={getLastWeekend().start}
                       className="px-3 py-1 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -752,7 +752,7 @@ export const PlayersManager = () => {
                     <input
                       type="date"
                       name="statsEndDate"
-                      defaultValue={getLastWeekend().end}
+                      // defaultValue={getLastWeekend().end}
                       className="px-3 py-1 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
