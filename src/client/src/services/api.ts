@@ -30,6 +30,15 @@ export const playersApi = {
   update: (id: number, data: UpdatePlayerDto) => api.put(`/players/${id}`, data),
   delete: (id: number) => api.delete(`/players/${id}`),
   setWeekendWarrior: (id: number) => api.patch(`/players/${id}/weekend-warrior`),
+  upload: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/players/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 
 export const sessionsApi = {

@@ -12,7 +12,6 @@ import {
 } from '@tanstack/react-table';
 import { playersApi } from '../../services/api';
 import { Player, CreatePlayerDto, UpdatePlayerDto } from '@shared/types';
-import axios from 'axios';
 import { config } from '../../config';
 import toast, { Toaster } from 'react-hot-toast';
 import { Modal } from '../shared/Modal';
@@ -180,11 +179,9 @@ export const PlayersManager = () => {
     if (!file) return;
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
 
     try {
-      const response = await axios.post('/api/players/upload', formData);
+      const response = await playersApi.upload(file);
       setUploadedPhotoPath(response.data.filePath);
       // Update the photoPath input value
       const photoPathInput = document.querySelector<HTMLInputElement>('input[name="photoPath"]');

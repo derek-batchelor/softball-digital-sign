@@ -10,7 +10,6 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 import { Modal } from '../shared/Modal';
 import { config } from '../../config';
-import axios from 'axios';
 import {
   useReactTable,
   getCoreRowModel,
@@ -120,11 +119,9 @@ export const ContentManager = () => {
     if (!file) return;
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
 
     try {
-      const response = await axios.post('/api/content/upload', formData);
+      const response = await contentApi.upload(file);
       setUploadedFilePath(response.data.filePath);
       // Update the filePath input value
       const filePathInput = document.querySelector<HTMLInputElement>('input[name="filePath"]');
