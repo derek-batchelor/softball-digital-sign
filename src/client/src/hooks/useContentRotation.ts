@@ -89,26 +89,43 @@ export const useContentRotation = ({ content, fallbackContent }: ContentRotation
   useEffect(() => {
     if (activeContent.length <= 1) return;
 
-    const preloadImages = () => {
-      // Preload next 2 images in the rotation
+    const preloadContent = () => {
+      // Preload next 2 pieces of content in the rotation
       for (let i = 1; i <= 2; i++) {
         const nextIndex = (currentIndex + i) % activeContent.length;
         const nextContent = activeContent[nextIndex];
 
-        if (nextContent?.filePath) {
-          const img = new Image();
-          img.src = nextContent.filePath;
-        }
-
-        // Also preload player photos if available
+        // Preload player photos if available
         if (nextContent?.player?.photoPath) {
           const img = new Image();
           img.src = nextContent.player.photoPath;
         }
+
+        // Preload image content
+        if (nextContent?.filePath && nextContent.contentType === 'IMAGE') {
+          const img = new Image();
+          img.src = nextContent.filePath;
+        }
+
+        // Preload videos by creating hidden video element
+        if (nextContent?.filePath && nextContent.contentType === 'VIDEO') {
+          const video = document.createElement('video');
+          video.src = nextContent.filePath;
+          video.preload = 'auto';
+          video.muted = true;
+          video.style.display = 'none';
+          document.body.appendChild(video);
+
+          // Remove after metadata loads
+          const handleLoaded = () => {
+            setTimeout(() => video.remove(), 100);
+          };
+          video.addEventListener('loadedmetadata', handleLoaded);
+        }
       }
     };
 
-    preloadImages();
+    preloadContent();
   }, [currentIndex, activeContent]);
 
   return {

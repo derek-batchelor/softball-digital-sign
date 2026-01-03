@@ -287,10 +287,12 @@ export class SignageService {
       usedPlayerIds.add(weekendWarrior.id);
     }
 
-    // 5. Fill with random players to ensure 3-4 players total
-    const targetPlayerCount = 4;
-    while (content.length < targetPlayerCount && content.length < activePlayers.length) {
-      const randomPlayer = this.getRandomPlayer(activePlayers, []);
+    // 5. Fill with random players to ensure at least 3 players total (non-repeating)
+    const minPlayerCount = 3;
+    while (content.length < minPlayerCount && usedPlayerIds.size < activePlayers.length) {
+      // Filter out already used players
+      const availablePlayers = activePlayers.filter((p) => !usedPlayerIds.has(p.id));
+      const randomPlayer = this.getRandomPlayer(availablePlayers, []);
       if (!randomPlayer || usedPlayerIds.has(randomPlayer.id)) break;
 
       content.push({

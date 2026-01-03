@@ -20,15 +20,34 @@ import { SessionMonitorService } from './services/session-monitor.service';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'better-sqlite3',
-      database:
-        process.env.DATABASE_PATH ||
-        join(__dirname, '..', '..', '..', 'local', 'data', 'softball-signage.db'),
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // Disable in production
-      logging: process.env.NODE_ENV === 'development',
-    }),
+    TypeOrmModule.forRoot(
+      (() => {
+        const databaseUrl = process.env.DATABASE_URL;
+        if (!databaseUrl) {
+          throw new Error('DATABASE_URL environment variable is required');
+        }
+
+        // Parse mssql://username:password@host:port/database?params
+        const url = new URL(databaseUrl);
+        const encrypt = url.searchParams.get('encrypt') !== 'false';
+
+        return {
+          type: 'mssql',
+          host: url.hostname,
+          port: Number.parseInt(url.port) || 1433,
+          username: decodeURIComponent(url.username),
+          password: decodeURIComponent(url.password),
+          database: url.pathname.slice(1), // Remove leading /
+          options: {
+            encrypt,
+            trustServerCertificate: !encrypt,
+          },
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: true, // Disable in production
+          logging: process.env.NODE_ENV === 'development' || process.env.LOG_LEVEL === 'debug',
+        };
+      })(),
+    ),
     ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: (() => {

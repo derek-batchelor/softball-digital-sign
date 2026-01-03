@@ -27,7 +27,7 @@ export class SignageContentEntity {
   @Column({ nullable: true })
   playerId?: number;
 
-  @Column({ default: true })
+  @Column({ type: 'bit', default: true })
   isActive!: boolean;
 
   @Column({ default: 0 })

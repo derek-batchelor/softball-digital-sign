@@ -27,12 +27,21 @@ param swaSku string = 'Free'
 @description('Azure region short code for unique names (e.g., eastus)')
 param regionCode string
 
+@description('SQL Server admin username')
+param sqlAdminUsername string = 'sqladmin'
+
+@secure()
+@description('SQL Server admin password (min 8 chars, must include uppercase, lowercase, number, and special char)')
+param sqlAdminPassword string
+
 // Derived names
 var workspaceName = '${namePrefix}-log-${regionCode}'
 var storageAccountName = toLower(replace('${namePrefix}${regionCode}', '-', ''))
 var managedEnvName = '${namePrefix}-env-${regionCode}'
 var containerAppName = '${namePrefix}-api-${regionCode}'
 var staticSiteName = '${namePrefix}-swa-${regionCode}'
+var sqlServerName = '${namePrefix}-sql-${regionCode}'
+var databaseName = 'softball'
 
 // Log Analytics Workspace
 resource law 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
@@ -66,19 +75,61 @@ resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01
   name: 'default'
 }
 
-resource dataShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
-  parent: fileServices
-  name: 'data'
-  properties: {
-    accessTier: 'TransactionOptimized'
-  }
-}
-
 resource mediaShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
   parent: fileServices
   name: 'media'
   properties: {
     accessTier: 'TransactionOptimized'
+  }
+}
+
+// Azure SQL Server
+resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
+  name: sqlServerName
+  location: location
+  properties: {
+    administratorLogin: sqlAdminUsername
+    administratorLoginPassword: sqlAdminPassword
+    version: '12.0'
+    minimalTlsVersion: '1.2'
+    publicNetworkAccess: 'Enabled'
+  }
+}
+
+// Allow Azure services to access SQL Server
+resource sqlFirewallRule 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = {
+  parent: sqlServer
+  name: 'AllowAzureServices'
+  properties: {
+    startIpAddress: '0.0.0.0'
+    endIpAddress: '0.0.0.0'
+  }
+}
+
+// SQL Database (Serverless tier)
+resource sqlDatabase 'Microsoft.Sql/servers/databases@2024-05-01-preview' = {
+  parent: sqlServer
+  name: databaseName
+  location: location
+  sku: {
+    name: 'GP_S_Gen5'  // General Purpose Serverless
+    tier: 'GeneralPurpose'
+    family: 'Gen5'
+    capacity: 2  // 2 vCores
+  }
+  properties: {
+    collation: 'SQL_Latin1_General_CP1_CI_AS'
+    maxSizeBytes: 2147483648  // 2GB
+    catalogCollation: 'SQL_Latin1_General_CP1_CI_AS'
+    zoneRedundant: false
+    readScale: 'Disabled'
+    requestedBackupStorageRedundancy: 'Local'
+    autoPauseDelay: 15  // Auto-pause after 15 minutes of inactivity
+    minCapacity: json('0.5')  // Min 0.5 vCores when active
+    isLedgerOn: false
+    useFreeLimit: true
+    freeLimitExhaustionBehavior: 'AutoPause'
+    availabilityZone: 'NoPreference'
   }
 }
 
@@ -93,20 +144,6 @@ resource env 'Microsoft.App/managedEnvironments@2024-03-01' = {
         customerId: law.properties.customerId
         sharedKey: law.listKeys().primarySharedKey
       }
-    }
-  }
-}
-
-// Environment Storage for Azure Files
-resource envStorageData 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
-  parent: env
-  name: 'data-storage'
-  properties: {
-    azureFile: {
-      accountName: storage.name
-      accountKey: storage.listKeys().keys[0].value
-      shareName: dataShare.name
-      accessMode: 'ReadWrite'
     }
   }
 }
@@ -144,6 +181,10 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'storage-account-key'
           value: storage.listKeys().keys[0].value
         }
+        {
+          name: 'database-url'
+          value: 'mssql://${sqlAdminUsername}:${sqlAdminPassword}@${sqlServer.properties.fullyQualifiedDomainName}:1433/${databaseName}?encrypt=true&trustServerCertificate=false'
+        }
       ]
       registries: [
         {
@@ -161,11 +202,6 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
     }
     template: {
       volumes: [
-        {
-          name: 'data'
-          storageType: 'AzureFile'
-          storageName: envStorageData.name
-        }
         {
           name: 'media'
           storageType: 'AzureFile'
@@ -190,12 +226,16 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
               value: '3000'
             }
             {
+              name: 'LOG_LEVEL'
+              value: 'warn'
+            }
+            {
               name: 'CORS_ORIGIN'
               value: corsOrigin
             }
             {
-              name: 'DATABASE_PATH'
-              value: '/mounts/data/database.sqlite'
+              name: 'DATABASE_URL'
+              secretRef: 'database-url'
             }
             {
               name: 'MEDIA_PATH'
@@ -204,10 +244,6 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
           ]
           volumeMounts: [
             {
-              volumeName: 'data'
-              mountPath: '/mounts/data'
-            }
-            {
               volumeName: 'media'
               mountPath: '/mounts/media'
             }
@@ -215,8 +251,8 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 1
-        maxReplicas: 1
+        minReplicas: 0
+        maxReplicas: 10  // Can now support multiple replicas with SQL Database
       }
     }
   }
@@ -255,6 +291,8 @@ output staticWebAppName string = swa.name
 output storageAccountId string = storage.id
 output storageAccountName string = storage.name
 output containerAppPrincipalId string = app.identity.principalId
-output fileShareData string = dataShare.name
 output fileShareMedia string = mediaShare.name
 output logAnalyticsWorkspaceId string = law.properties.customerId
+output sqlServerName string = sqlServer.name
+output sqlServerFqdn string = sqlServer.properties.fullyQualifiedDomainName
+output databaseName string = sqlDatabase.name

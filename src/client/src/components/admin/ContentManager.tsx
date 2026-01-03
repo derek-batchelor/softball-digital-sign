@@ -331,7 +331,7 @@ export const ContentManager = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={createMutation.isPending || updateMutation.isPending || isUploading}
                 className="px-6 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
@@ -339,10 +339,10 @@ export const ContentManager = () => {
               <button
                 type="submit"
                 form="content-form"
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={createMutation.isPending || updateMutation.isPending || isUploading}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {(createMutation.isPending || updateMutation.isPending) && (
+                {(createMutation.isPending || updateMutation.isPending || isUploading) && (
                   <svg
                     className="animate-spin h-4 w-4"
                     xmlns="http://www.w3.org/2000/svg"
@@ -364,9 +364,11 @@ export const ContentManager = () => {
                     ></path>
                   </svg>
                 )}
-                {createMutation.isPending || updateMutation.isPending
-                  ? 'Saving...'
-                  : `${editingContent ? 'Update' : 'Create'} Content`}
+                {isUploading
+                  ? 'Uploading...'
+                  : createMutation.isPending || updateMutation.isPending
+                    ? 'Saving...'
+                    : `${editingContent ? 'Update' : 'Create'} Content`}
               </button>
             </div>
           }

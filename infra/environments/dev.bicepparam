@@ -18,3 +18,7 @@ param corsOrigin = 'https://proud-pond-094ce810f.eastus2.4.azurestaticapps.net,h
 
 // SWA SKU
 param swaSku = 'Free'
+
+// SQL Server credentials (use strong password)
+param sqlAdminUsername = 'sqladmin'
+param sqlAdminPassword = 'REPLACE_WITH_STRONG_PASSWORD'  // Min 8 chars, must include uppercase, lowercase, number, and special char

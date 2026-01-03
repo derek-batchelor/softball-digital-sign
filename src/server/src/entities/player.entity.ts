@@ -31,10 +31,10 @@ export class PlayerEntity {
 
   @Column({ nullable: true })
   graduationYear?: number;
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'bit', default: true })
   isActive!: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'bit', default: false })
   isWeekendWarrior!: boolean;
 
   @Column({ type: 'date', nullable: true })

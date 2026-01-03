@@ -14,7 +14,7 @@ export class SessionEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ default: false })
+  @Column({ type: 'bit', default: false })
   isRecurring!: boolean;
 
   @Column({ type: 'int', nullable: true })
@@ -32,7 +32,7 @@ export class SessionEntity {
   @Column()
   playerId!: number;
 
-  @Column({ default: true })
+  @Column({ type: 'bit', default: true })
   isActive!: boolean;
 
   @CreateDateColumn()

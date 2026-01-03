@@ -55,6 +55,7 @@ export const PlayersManager = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
       setIsFormOpen(false);
+      setUploadedPhotoPath('');
       toast.success('Player created successfully!');
     },
     onError: (error: any) => {
@@ -69,6 +70,7 @@ export const PlayersManager = () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
       setEditingPlayer(null);
       setIsFormOpen(false);
+      setUploadedPhotoPath('');
       toast.success('Player updated successfully!');
     },
     onError: (error: any) => {
@@ -407,11 +409,14 @@ export const PlayersManager = () => {
       {
         accessorKey: 'updatedAt',
         header: 'Last Updated',
-        cell: (info) => (
-          <span className="text-sm text-gray-500">
-            {new Date(info.getValue() as string).toLocaleDateString()}
-          </span>
-        ),
+        cell: (info) => {
+          const date = new Date(info.getValue() as string);
+          return (
+            <span className="text-sm text-gray-500">
+              {date.toLocaleDateString('en-US', { timeZone: 'UTC' })}
+            </span>
+          );
+        },
       },
       {
         id: 'actions',
@@ -699,7 +704,7 @@ export const PlayersManager = () => {
                   {(uploadedPhotoPath || editingPlayer?.photoPath) && (
                     <div className="mb-2">
                       <img
-                        src={`${config.apiUrl}${uploadedPhotoPath || editingPlayer?.photoPath}`}
+                        src={`${config.apiUrl}${uploadedPhotoPath || editingPlayer?.photoPath}?t=${Date.now()}`}
                         alt="Player"
                         className="h-64 w-64 object-cover rounded-lg border"
                       />

@@ -55,6 +55,7 @@ export const PlayerStatsCard = ({ player, photoPath, isWeekendWarrior }: PlayerS
           <div className="flex flex-col items-center justify-start">
             {(photoPath || player?.photoPath) && (
               <img
+                key={`player-photo-${player.id}`}
                 src={photoPath || player?.photoPath}
                 alt={`${player?.firstName} ${player?.lastName}`}
                 className="w-72 h-72 rounded-3xl object-cover shadow-xl mb-4"
