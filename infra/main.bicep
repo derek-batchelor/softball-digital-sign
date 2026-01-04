@@ -119,12 +119,10 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2024-05-01-preview' = {
   }
   properties: {
     collation: 'SQL_Latin1_General_CP1_CI_AS'
-    maxSizeBytes: 2147483648  // 2GB
     catalogCollation: 'SQL_Latin1_General_CP1_CI_AS'
     zoneRedundant: false
     readScale: 'Disabled'
     requestedBackupStorageRedundancy: 'Local'
-    autoPauseDelay: 15  // Auto-pause after 15 minutes of inactivity
     minCapacity: json('0.5')  // Min 0.5 vCores when active
     isLedgerOn: false
     useFreeLimit: true

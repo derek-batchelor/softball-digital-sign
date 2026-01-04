@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   useReactTable,
@@ -15,6 +15,8 @@ import { Player, CreatePlayerDto, UpdatePlayerDto } from '@shared/types';
 import { config } from '../../config';
 import toast, { Toaster } from 'react-hot-toast';
 import { Modal } from '../shared/Modal';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export const PlayersManager = () => {
   const queryClient = useQueryClient();
@@ -26,6 +28,10 @@ export const PlayersManager = () => {
   const [smartFillText, setSmartFillText] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filterText, setFilterText] = useState('');
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([
+    editingPlayer?.statsStartDate ? new Date(editingPlayer.statsStartDate) : null,
+    editingPlayer?.statsEndDate ? new Date(editingPlayer.statsEndDate) : null,
+  ]);
 
   // Calculate last weekend (Saturday and Sunday)
   // const getLastWeekend = () => {
@@ -40,6 +46,22 @@ export const PlayersManager = () => {
   //     end: lastSunday.toISOString().split('T')[0],
   //   };
   // };
+
+  // Sync date range when editing player changes
+  useEffect(() => {
+    if (editingPlayer) {
+      setDateRange([
+        editingPlayer.statsStartDate
+          ? new Date(String(editingPlayer.statsStartDate).split('T')[0] + 'T00:00:00')
+          : null,
+        editingPlayer.statsEndDate
+          ? new Date(String(editingPlayer.statsEndDate).split('T')[0] + 'T00:00:00')
+          : null,
+      ]);
+    } else {
+      setDateRange([null, null]);
+    }
+  }, [editingPlayer]);
 
   const { data: players, isLoading } = useQuery({
     queryKey: ['players'],
@@ -115,10 +137,10 @@ export const PlayersManager = () => {
       isActive: formData.get('isActive') === 'on',
       isWeekendWarrior: formData.get('isWeekendWarrior') === 'on',
       statsStartDate: formData.get('statsStartDate')
-        ? new Date(formData.get('statsStartDate') as string)
+        ? new Date((formData.get('statsStartDate') as string) + 'T00:00:00')
         : undefined,
       statsEndDate: formData.get('statsEndDate')
-        ? new Date(formData.get('statsEndDate') as string)
+        ? new Date((formData.get('statsEndDate') as string) + 'T00:00:00')
         : undefined,
       gamesPlayed: Number.parseInt(formData.get('gamesPlayed') as string) || 0,
       plateAppearances: Number.parseInt(formData.get('plateAppearances') as string) || 0,
@@ -316,16 +338,12 @@ export const PlayersManager = () => {
       if (lastNameInput) lastNameInput.value = name.lastName;
     }
 
-    // Update date fields if parsed
-    if (startDate) {
-      const startDateInput = document.querySelector<HTMLInputElement>(
-        'input[name="statsStartDate"]',
-      );
-      if (startDateInput) startDateInput.value = startDate;
-    }
-    if (endDate) {
-      const endDateInput = document.querySelector<HTMLInputElement>('input[name="statsEndDate"]');
-      if (endDateInput) endDateInput.value = endDate;
+    // Update date range state if parsed (parse as local date to avoid timezone issues)
+    if (startDate || endDate) {
+      setDateRange([
+        startDate ? new Date(startDate + 'T00:00:00') : null,
+        endDate ? new Date(endDate + 'T00:00:00') : null,
+      ]);
     }
 
     // Update stat fields
@@ -735,27 +753,35 @@ export const PlayersManager = () => {
             <div className="border-t pt-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Statistics</h3>
-                <div className="flex gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      name="statsStartDate"
-                      // defaultValue={getLastWeekend().start}
-                      className="px-3 py-1 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">End Date</label>
-                    <input
-                      type="date"
-                      name="statsEndDate"
-                      // defaultValue={getLastWeekend().end}
-                      className="px-3 py-1 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                <div className="flex gap-2">
+                  <DatePicker
+                    startDate={dateRange[0]}
+                    endDate={dateRange[1]}
+                    onChange={(update) => setDateRange(update)}
+                    selectsRange
+                    isClearable
+                    placeholderText="Select date range"
+                    className="px-3 py-1 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    dateFormat="MM/dd/yy"
+                  />
+                  <input
+                    type="hidden"
+                    name="statsStartDate"
+                    value={
+                      dateRange[0]
+                        ? `${dateRange[0].getFullYear()}-${String(dateRange[0].getMonth() + 1).padStart(2, '0')}-${String(dateRange[0].getDate()).padStart(2, '0')}`
+                        : ''
+                    }
+                  />
+                  <input
+                    type="hidden"
+                    name="statsEndDate"
+                    value={
+                      dateRange[1]
+                        ? `${dateRange[1].getFullYear()}-${String(dateRange[1].getMonth() + 1).padStart(2, '0')}-${String(dateRange[1].getDate()).padStart(2, '0')}`
+                        : ''
+                    }
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

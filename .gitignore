@@ -6,6 +6,7 @@ yarn.lock
 dist/
 build/
 *.tsbuildinfo
+**/.vite
 
 # Local runtime files
 local/

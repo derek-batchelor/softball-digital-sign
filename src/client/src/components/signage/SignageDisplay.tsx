@@ -135,14 +135,14 @@ export const SignageDisplay = () => {
       </div>
 
       {/* Current Time Display */}
-      <div
-        className={`absolute top-8 right-8 bg-black bg-opacity-70 text-white px-6 py-3 rounded-lg`}
-      >
-        <p className="text-2xl font-mono font-semibold">{formatTime(currentTime)}</p>
+      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 md:top-6 md:right-6 lg:top-8 lg:right-8 bg-black bg-opacity-70 text-white px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-md sm:rounded-lg">
+        <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-mono font-semibold">
+          {formatTime(currentTime)}
+        </p>
       </div>
 
       {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-2 bg-gray-800 bg-opacity-50">
+      <div className="absolute bottom-0 left-0 right-0 h-1 sm:h-1.5 md:h-2 bg-gray-800 bg-opacity-50">
         <div
           className="h-full bg-blue-500 transition-all duration-100 ease-linear"
           style={{ width: `${progress}%` }}
