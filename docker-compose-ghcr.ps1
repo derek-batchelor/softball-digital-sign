@@ -6,12 +6,16 @@
     This script pulls and runs the frontend and backend containers from GitHub Container Registry
 .PARAMETER Owner
     GitHub repository owner username (defaults to current git remote)
+.PARAMETER PAT
+    GitHub Personal Access Token for GHCR authentication (with read:packages permission)
 .PARAMETER Pull
     Pull latest images before starting
 .PARAMETER Down
     Stop and remove containers
 .EXAMPLE
     .\docker-compose-ghcr.ps1
+.EXAMPLE
+    .\docker-compose-ghcr.ps1 -Owner "yourusername" -PAT "ghp_yourtoken"
 .EXAMPLE
     .\docker-compose-ghcr.ps1 -Owner "yourusername" -Pull
 .EXAMPLE
@@ -55,20 +59,15 @@ if ($Down) {
     exit $LASTEXITCODE
 }
 
-# Check if we need to login to GHCR
-$needsLogin = $false
-if ($Pull -or -not $Down) {
-    # Try to pull a small image to test if we're logged in
-    Write-Host "`nChecking GHCR authentication..." -ForegroundColor Cyan
-    $testPull = docker pull ghcr.io/$Owner/softball-digital-sign-server:latest 2>&1
-    if ($LASTEXITCODE -ne 0 -and $testPull -match '(unauthorized|denied|401)') {
-        $needsLogin = $true
-        Write-Host "Not logged in to GHCR" -ForegroundColor Yellow
-    }
-}
+# Check if images exist locally
+Write-Host "`nChecking for local images..." -ForegroundColor Cyan
+$serverImageExists = docker images -q ghcr.io/$Owner/softball-digital-sign-server:latest
+$clientImageExists = docker images -q ghcr.io/$Owner/softball-digital-sign-client:latest
 
-# Login to GHCR if needed
-if ($needsLogin) {
+if (-not $serverImageExists -or -not $clientImageExists -or $Pull) {
+    Write-Host "Need to pull images from GHCR" -ForegroundColor Yellow
+    
+    # Login to GHCR
     if (-not $PAT) {
         Write-Host "`nGitHub Personal Access Token required for GHCR access" -ForegroundColor Yellow
         Write-Host "Enter your GitHub PAT (with read:packages permission):" -ForegroundColor Cyan
@@ -78,23 +77,27 @@ if ($needsLogin) {
         [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)
     }
     
-    Write-Host "Logging in to GHCR..." -ForegroundColor Cyan
-    $PAT | docker login ghcr.io -u $Owner --password-stdin
+    Write-Host "`nLogging in to GHCR..." -ForegroundColor Cyan
+    $PAT | docker login ghcr.io -u $Owner --password-stdin 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "`n✗ Failed to login to GHCR" -ForegroundColor Red
+        Write-Host "✗ Failed to login to GHCR" -ForegroundColor Red
         Write-Host "Make sure your PAT has 'read:packages' permission" -ForegroundColor Yellow
         exit $LASTEXITCODE
     }
     Write-Host "✓ Successfully logged in to GHCR" -ForegroundColor Green
-}
-
-if ($Pull) {
-    Write-Host "`nPulling latest images from GHCR..." -ForegroundColor Cyan
+    
+    Write-Host "`nPulling images from GHCR..." -ForegroundColor Cyan
     docker-compose -f docker-compose.ghcr.yml pull
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "`n✗ Failed to pull images" -ForegroundColor Red
+        Write-Host "✗ Failed to pull images" -ForegroundColor Red
+        Write-Host "`nMake sure the images exist at:" -ForegroundColor Yellow
+        Write-Host "  ghcr.io/$Owner/softball-digital-sign-server:latest" -ForegroundColor White
+        Write-Host "  ghcr.io/$Owner/softball-digital-sign-client:latest" -ForegroundColor White
         exit $LASTEXITCODE
     }
+    Write-Host "✓ Images pulled successfully" -ForegroundColor Green
+} else {
+    Write-Host "✓ Images found locally" -ForegroundColor Green
 }
 
 Write-Host "`nStarting containers..." -ForegroundColor Cyan
@@ -110,8 +113,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "  docker-compose -f docker-compose.ghcr.yml logs -f" -ForegroundColor White
     Write-Host "`nTo stop:" -ForegroundColor Cyan
     Write-Host "  .\docker-compose-ghcr.ps1 -Down" -ForegroundColor White
-}
-else {
+} else {
     Write-Host "`n✗ Failed to start containers" -ForegroundColor Red
     exit $LASTEXITCODE
 }
