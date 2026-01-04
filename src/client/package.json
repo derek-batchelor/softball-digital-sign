@@ -15,6 +15,7 @@
     "axios": "^1.6.5",
     "date-fns": "^3.0.6",
     "react": "^18.2.0",
+    "react-datepicker": "^9.1.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.21.1",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.2.48",
+    "@types/react-datepicker": "^6.2.0",
     "@types/react-dom": "^18.2.18",
     "@typescript-eslint/eslint-plugin": "^6.17.0",
     "@typescript-eslint/parser": "^6.17.0",
