@@ -63,4 +63,5 @@ jobs:
           app_location: 'src/client/dist'
           output_location: '.'
           skip_app_build: true
+          production_branch: 'main'
           deployment_environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'production' || 'staging') }}
