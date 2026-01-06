@@ -4,17 +4,16 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 .dissolve-transition {
@@ -35,4 +34,38 @@ body {
 
 .dissolve-exit-active {
   opacity: 0;
+}
+
+/* Custom scrollbar styling for better visibility */
+.scrollbar-visible {
+  scrollbar-width: thick; /* Firefox - make scrollbar thicker */
+  scrollbar-color: #4a5568 #e2e8f0; /* thumb (dark) and track color for Firefox */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  touch-action: pan-x pan-y; /* Allow touch panning in both directions */
+}
+
+.scrollbar-visible::-webkit-scrollbar {
+  height: 20px; /* Horizontal scrollbar height - very prominent */
+  width: 20px; /* Vertical scrollbar width - very prominent */
+}
+
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 10px;
+  border: 1px solid #cbd5e0;
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 10px;
+  border: 4px solid #e2e8f0;
+  min-height: 40px; /* Ensure thumb is always grabbable */
+}
+
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: #2d3748;
+}
+
+.scrollbar-visible::-webkit-scrollbar-corner {
+  background: #e2e8f0;
 }

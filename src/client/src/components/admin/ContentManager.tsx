@@ -279,19 +279,23 @@ export const ContentManager = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
       <Toaster position="top-right" />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Content Manager</h1>
-              <p className="text-gray-600 mt-2">Manage signage display content</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                Content Manager
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-2">
+                Manage signage display content
+              </p>
             </div>
             <a
               href="/admin"
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-center whitespace-nowrap"
             >
               ← Back to Dashboard
             </a>
@@ -299,18 +303,18 @@ export const ContentManager = () => {
         </div>
 
         {/* Filters and Actions */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <input
               type="text"
               placeholder="Filter by title..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg flex-1 max-w-md"
+              className="px-4 py-2 border border-gray-300 rounded-lg flex-1 text-sm sm:text-base"
             />
             <button
               onClick={() => setIsFormOpen(true)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+              className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold whitespace-nowrap text-sm sm:text-base"
             >
               + Add Content
             </button>
@@ -324,12 +328,12 @@ export const ContentManager = () => {
           title={editingContent ? 'Edit Content' : 'Create New Content'}
           maxWidth="2xl"
           footer={
-            <div className="flex justify-end space-x-4">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={handleCancel}
                 disabled={createMutation.isPending || updateMutation.isPending || isUploading}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Cancel
               </button>
@@ -337,7 +341,7 @@ export const ContentManager = () => {
                 type="submit"
                 form="content-form"
                 disabled={createMutation.isPending || updateMutation.isPending || isUploading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="w-full sm:w-auto bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 {(createMutation.isPending || updateMutation.isPending || isUploading) && (
                   <svg
@@ -436,51 +440,56 @@ export const ContentManager = () => {
 
         {/* Content Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        {header.isPlaceholder ? null : (
-                          <div
-                            className={
-                              header.column.getCanSort() ? 'cursor-pointer select-none' : ''
-                            }
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            {typeof header.column.columnDef.header === 'function'
-                              ? header.column.columnDef.header(header.getContext())
-                              : header.column.columnDef.header}
-                            {{
-                              asc: ' ↑',
-                              desc: ' ↓',
-                            }[header.column.getIsSorted() as string] ?? null}
-                          </div>
-                        )}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50">
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-6 py-4 whitespace-nowrap">
-                        {typeof cell.column.columnDef.cell === 'function'
-                          ? cell.column.columnDef.cell(cell.getContext())
-                          : (cell.getValue() as React.ReactNode)}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="overflow-x-auto">
+            <div className="max-h-[600px] overflow-y-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 sticky top-0">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          key={header.id}
+                          className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          {header.isPlaceholder ? null : (
+                            <div
+                              className={
+                                header.column.getCanSort() ? 'cursor-pointer select-none' : ''
+                              }
+                              onClick={header.column.getToggleSortingHandler()}
+                            >
+                              {typeof header.column.columnDef.header === 'function'
+                                ? header.column.columnDef.header(header.getContext())
+                                : header.column.columnDef.header}
+                              {{
+                                asc: ' ↑',
+                                desc: ' ↓',
+                              }[header.column.getIsSorted() as string] ?? null}
+                            </div>
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {table.getRowModel().rows.map((row) => (
+                    <tr key={row.id} className="hover:bg-gray-50">
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm"
+                        >
+                          {typeof cell.column.columnDef.cell === 'function'
+                            ? cell.column.columnDef.cell(cell.getContext())
+                            : (cell.getValue() as React.ReactNode)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {table.getRowModel().rows.length === 0 && (
@@ -492,46 +501,46 @@ export const ContentManager = () => {
           )}
 
           {/* Pagination Controls */}
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-700">
+              <span className="text-xs sm:text-sm text-gray-700">
                 Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()} •{' '}
                 {content?.length || 0} total items
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
-                className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 sm:px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ««
               </button>
               <button
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
-                className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 sm:px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ‹
               </button>
               <button
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
-                className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 sm:px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 ›
               </button>
               <button
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
-                className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 sm:px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 »»
               </button>
               <select
                 value={table.getState().pagination.pageSize}
                 onChange={(e) => table.setPageSize(Number(e.target.value))}
-                className="px-3 py-1 border rounded bg-white"
+                className="px-2 sm:px-3 py-1 text-sm border rounded bg-white"
               >
                 {[10, 20, 30, 50].map((pageSize) => (
                   <option key={pageSize} value={pageSize}>

@@ -13,6 +13,10 @@ A digital signage system for displaying softball player statistics, highlights, 
 - **Auto-rotation**: Content rotates with variable durations and 1s dissolve transitions
 - **Admin Dashboard**: Manage schedules, players, tournaments, stats, and content
 - **Real-time Updates**: WebSocket notifications for session transitions
+- **Multi-Display Support**: Interactive positioning and scaling for any screen size (Smart TVs, PCs, Mobile)
+  - Adjust scale, position, and rotation
+  - Settings saved to local storage
+  - See [DISPLAY_SETTINGS.md](DISPLAY_SETTINGS.md) for details
 
 ## Tech Stack
 

@@ -66,14 +66,14 @@ export const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
       <div
-        className={`bg-white rounded-lg shadow-xl ${maxWidthClasses[maxWidth]} w-full max-h-[90vh] flex flex-col`}
+        className={`bg-white rounded-lg shadow-xl ${maxWidthClasses[maxWidth]} w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col`}
       >
         {/* Header - Fixed */}
-        <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-gray-200">
+        <div className="flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-gray-200">
           <div className="flex justify-between items-start">
-            <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 pr-2">{title}</h2>
             <div className="flex items-center gap-3">
               {actions}
               <button
@@ -99,11 +99,11 @@ export const Modal = ({
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">{children}</div>
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6">{children}</div>
 
         {/* Footer - Fixed (optional) */}
         {footer && (
-          <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 bg-gray-50">
             {footer}
           </div>
         )}
