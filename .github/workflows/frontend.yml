@@ -28,7 +28,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'production' || 'staging') }}
+      name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'production' || 'dev') }}
       url: ${{ steps.deploy.outputs.static_web_app_url }}
 
     steps:
