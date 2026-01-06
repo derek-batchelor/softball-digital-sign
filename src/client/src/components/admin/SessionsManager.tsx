@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sessionsApi, playersApi } from '../../services/api';
 import { Session, Player, CreateSessionDto, UpdateSessionDto } from '@shared/types';
@@ -17,6 +17,9 @@ export const SessionsManager = () => {
   const [filterText, setFilterText] = useState('');
   const [filterActive, setFilterActive] = useState<'all' | 'active' | 'inactive'>('all');
   const [filterType, setFilterType] = useState<'all' | 'recurring' | 'one-time'>('all');
+  const [playerSearchQuery, setPlayerSearchQuery] = useState('');
+  const [debouncedPlayerSearch, setDebouncedPlayerSearch] = useState('');
+  const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
 
   const { data: sessions, isLoading: sessionsLoading } = useQuery({
     queryKey: ['sessions'],
@@ -33,6 +36,31 @@ export const SessionsManager = () => {
       return response.data as Player[];
     },
   });
+
+  // Debounce player search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedPlayerSearch(playerSearchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [playerSearchQuery]);
+
+  // Filter players based on debounced search query
+  const filteredPlayers = useMemo(() => {
+    if (!players) return [];
+
+    if (!debouncedPlayerSearch.trim()) {
+      return players.filter((p) => p.isActive);
+    }
+
+    const searchLower = debouncedPlayerSearch.toLowerCase();
+    return players.filter((player) => {
+      if (!player.isActive) return false;
+      const fullName = `${player.firstName} ${player.lastName}`.toLowerCase();
+      return fullName.includes(searchLower);
+    });
+  }, [players, debouncedPlayerSearch]);
 
   const createMutation = useMutation({
     mutationFn: (data: CreateSessionDto) => sessionsApi.create(data),
@@ -103,6 +131,8 @@ export const SessionsManager = () => {
   const handleEdit = (session: Session) => {
     setEditingSession(session);
     setSessionType(session.isRecurring ? 'recurring' : 'one-time');
+    setSelectedPlayerId(session.playerId);
+    setPlayerSearchQuery('');
     setIsFormOpen(true);
   };
 
@@ -116,6 +146,8 @@ export const SessionsManager = () => {
     setIsFormOpen(false);
     setEditingSession(null);
     setSessionType('recurring');
+    setPlayerSearchQuery('');
+    setSelectedPlayerId(null);
   };
 
   const handleSort = (field: 'type' | 'time' | 'player') => {
@@ -263,19 +295,23 @@ export const SessionsManager = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
       <Toaster position="top-right" />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Sessions Manager</h1>
-              <p className="text-gray-600 mt-2">Schedule and manage display sessions</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                Sessions Manager
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-2">
+                Schedule and manage display sessions
+              </p>
             </div>
             <a
               href="/admin"
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-center whitespace-nowrap"
             >
               ← Back to Dashboard
             </a>
@@ -283,20 +319,20 @@ export const SessionsManager = () => {
         </div>
 
         {/* Filters and Actions */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex gap-4 flex-1 flex-wrap">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <input
                 type="text"
                 placeholder="Search sessions..."
                 value={filterText}
                 onChange={(e) => setFilterText(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg flex-1 max-w-md"
+                className="px-4 py-2 border border-gray-300 rounded-lg flex-1 text-sm sm:text-base"
               />
               <select
                 value={filterActive}
                 onChange={(e) => setFilterActive(e.target.value as 'all' | 'active' | 'inactive')}
-                className="px-4 py-2 border border-gray-300 rounded-lg"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm sm:text-base"
               >
                 <option value="all">All Sessions</option>
                 <option value="active">Active Only</option>
@@ -305,7 +341,7 @@ export const SessionsManager = () => {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value as 'all' | 'recurring' | 'one-time')}
-                className="px-4 py-2 border border-gray-300 rounded-lg"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm sm:text-base"
               >
                 <option value="all">All Types</option>
                 <option value="recurring">Recurring Only</option>
@@ -316,9 +352,11 @@ export const SessionsManager = () => {
               onClick={() => {
                 setEditingSession(null);
                 setSessionType('recurring');
+                setPlayerSearchQuery('');
+                setSelectedPlayerId(null);
                 setIsFormOpen(true);
               }}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold whitespace-nowrap text-sm sm:text-base"
             >
               + New Session
             </button>
@@ -328,11 +366,11 @@ export const SessionsManager = () => {
         {/* Sessions Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[640px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('player')}
                   >
                     <div className="flex items-center gap-1">
@@ -341,7 +379,7 @@ export const SessionsManager = () => {
                     </div>
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('type')}
                   >
                     <div className="flex items-center gap-1">
@@ -349,11 +387,11 @@ export const SessionsManager = () => {
                       {sortField === 'type' && <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>}
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Schedule
                   </th>
                   <th
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('time')}
                   >
                     <div className="flex items-center gap-1">
@@ -361,10 +399,10 @@ export const SessionsManager = () => {
                       {sortField === 'time' && <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>}
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -372,7 +410,7 @@ export const SessionsManager = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredAndSortedSessions?.map((session) => (
                   <tr key={session.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm">
                       <div className="text-sm text-gray-900">
                         {session.player
                           ? `${session.player.firstName} ${session.player.lastName}`
@@ -382,7 +420,7 @@ export const SessionsManager = () => {
                         <div className="text-xs text-gray-500">{session.player.teamName}</div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           session.isRecurring
@@ -393,20 +431,20 @@ export const SessionsManager = () => {
                         {session.isRecurring ? 'Recurring' : 'One-Time'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{getScheduleDisplay(session)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         {formatTime(session.startTime)} -{' '}
                         {formatTime(calculateEndTime(session.startTime, session.duration))}
                       </div>
                       <div className="text-xs text-gray-500">{session.duration} min</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1">{getStatusBadge(session)}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
                       <div className="text-right space-x-2">
                         <button
                           onClick={() => handleEdit(session)}
@@ -469,12 +507,12 @@ export const SessionsManager = () => {
           title={editingSession ? 'Edit Session' : 'Create New Session'}
           maxWidth="2xl"
           footer={
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
               <button
                 type="button"
                 onClick={handleCancel}
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Cancel
               </button>
@@ -482,7 +520,7 @@ export const SessionsManager = () => {
                 type="submit"
                 form="session-form"
                 disabled={createMutation.isPending || updateMutation.isPending}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 {(createMutation.isPending || updateMutation.isPending) && (
                   <svg
@@ -506,16 +544,16 @@ export const SessionsManager = () => {
                     ></path>
                   </svg>
                 )}
-                {createMutation.isPending || updateMutation.isPending
-                  ? 'Saving...'
-                  : editingSession
-                    ? 'Update Session'
-                    : 'Create Session'}
+                {(() => {
+                  if (createMutation.isPending || updateMutation.isPending) return 'Saving...';
+                  if (editingSession) return 'Update Session';
+                  return 'Create Session';
+                })()}
               </button>
             </div>
           }
         >
-          <form id="session-form" onSubmit={handleSubmit}>
+          <form id="session-form" key={editingSession?.id || 'new'} onSubmit={handleSubmit}>
             {/* Session Type */}
             <div className="mb-4">
               <fieldset>
@@ -552,29 +590,80 @@ export const SessionsManager = () => {
             {/* Player Selection */}
             <div className="mb-4">
               <label
-                htmlFor="session-player"
+                htmlFor="session-player-search"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Player *
               </label>
-              <select
-                id="session-player"
-                name="playerId"
-                defaultValue={editingSession?.playerId || ''}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select a player</option>
-                {players
-                  ?.filter((p) => p.isActive)
-                  .map((player) => (
-                    <option key={player.id} value={player.id}>
-                      {player.firstName} {player.lastName}
-                      {player.teamName && ` - ${player.teamName}`}
-                      {player.jerseyNumber && ` (#${player.jerseyNumber})`}
-                    </option>
-                  ))}
-              </select>
+              <input
+                id="session-player-search"
+                type="text"
+                value={playerSearchQuery}
+                onChange={(e) => setPlayerSearchQuery(e.target.value)}
+                placeholder="Search by name..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-2"
+              />
+              <input type="hidden" name="playerId" value={selectedPlayerId || ''} required />
+
+              <div className="max-h-48 overflow-y-auto border border-gray-300 rounded-lg">
+                {filteredPlayers.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                    {playerSearchQuery ? 'No players found' : 'No active players'}
+                  </div>
+                ) : (
+                  filteredPlayers.map((player) => (
+                    <button
+                      key={player.id}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setSelectedPlayerId(player.id);
+                        setPlayerSearchQuery('');
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        setSelectedPlayerId(player.id);
+                        setPlayerSearchQuery('');
+                      }}
+                      className={`w-full text-left px-4 py-2 hover:bg-gray-100 active:bg-gray-200 flex items-center justify-between ${
+                        selectedPlayerId === player.id
+                          ? 'bg-blue-50 border-l-4 border-blue-500'
+                          : ''
+                      }`}
+                    >
+                      <span className="text-sm">
+                        {player.firstName} {player.lastName}
+                        {player.teamName && (
+                          <span className="text-gray-500 ml-2">- {player.teamName}</span>
+                        )}
+                        {player.jerseyNumber && (
+                          <span className="text-gray-500 ml-1">(#{player.jerseyNumber})</span>
+                        )}
+                      </span>
+                      {selectedPlayerId === player.id && (
+                        <svg
+                          className="w-5 h-5 text-blue-500"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  ))
+                )}
+              </div>
+
+              {selectedPlayerId && (
+                <div className="mt-2 text-sm text-gray-600">
+                  Selected: {players?.find((p) => p.id === selectedPlayerId)?.firstName}{' '}
+                  {players?.find((p) => p.id === selectedPlayerId)?.lastName}
+                </div>
+              )}
             </div>
 
             {/* Day of Week - Only for Recurring */}
@@ -621,7 +710,8 @@ export const SessionsManager = () => {
                     : ''
                 }
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                style={{ touchAction: 'manipulation' }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer min-h-[44px]"
               />
               <p className="mt-1 text-xs text-gray-500">
                 {sessionType === 'recurring'

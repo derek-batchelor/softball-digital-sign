@@ -528,19 +528,21 @@ export const PlayersManager = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="bg-gray-100 p-2 sm:p-6 lg:p-8 pb-4 sm:pb-6 lg:pb-8 min-h-screen overflow-y-auto">
       <Toaster position="top-right" />
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
+        <div className="mb-3 sm:mb-6 lg:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Players</h1>
-              <p className="text-gray-600 mt-2">Manage player roster and statistics</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Players</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-2">
+                Manage player roster and statistics
+              </p>
             </div>
             <a
               href="/admin"
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-center whitespace-nowrap"
             >
               ← Back to Dashboard
             </a>
@@ -548,18 +550,18 @@ export const PlayersManager = () => {
         </div>
 
         {/* Filters and Actions */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-3 sm:mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <input
               type="text"
               placeholder="Filter by name or team..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg flex-1 max-w-md"
+              className="px-4 py-2 border border-gray-300 rounded-lg flex-1 text-sm sm:text-base"
             />
             <button
               onClick={() => setIsFormOpen(true)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+              className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold whitespace-nowrap text-sm sm:text-base"
             >
               + Add Player
             </button>
@@ -576,18 +578,18 @@ export const PlayersManager = () => {
             <button
               type="button"
               onClick={() => setIsSmartFillOpen(true)}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 text-sm"
+              className="bg-purple-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-purple-700 text-xs sm:text-sm whitespace-nowrap"
             >
               Smart Fill
             </button>
           }
           footer={
-            <div className="flex justify-end space-x-4">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={handleCancel}
                 disabled={createMutation.isPending || updateMutation.isPending || isUploading}
-                className="px-6 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Cancel
               </button>
@@ -595,7 +597,7 @@ export const PlayersManager = () => {
                 type="submit"
                 form="player-form"
                 disabled={createMutation.isPending || updateMutation.isPending || isUploading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="w-full sm:w-auto bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 {(createMutation.isPending || updateMutation.isPending || isUploading) && (
                   <svg
@@ -1101,8 +1103,8 @@ export const PlayersManager = () => {
 
         {/* Players Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-auto scrollbar-visible">
+            <table className="min-w-[900px] w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>

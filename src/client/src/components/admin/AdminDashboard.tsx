@@ -1,8 +1,8 @@
 export const AdminDashboard = () => {
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-6 sm:mb-8">
           Softball Digital Signage - Admin Dashboard
         </h1>
 
@@ -25,9 +25,11 @@ export const AdminDashboard = () => {
           <AdminCard title="View Display" description="Preview the live signage display" link="/" />
         </div>
 
-        <div className="mt-12 bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Quick Start Guide</h2>
-          <ol className="list-decimal list-inside space-y-2 text-gray-700">
+        <div className="mt-8 sm:mt-12 bg-white rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+            Quick Start Guide
+          </h2>
+          <ol className="list-decimal list-inside space-y-2 text-sm sm:text-base text-gray-700">
             <li>
               Add <strong>Players</strong> to your roster with their stats and graduation year
             </li>
@@ -60,8 +62,11 @@ interface AdminCardProps {
 }
 
 const AdminCard = ({ title, description, link }: AdminCardProps) => (
-  <a href={link} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-    <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-    <p className="text-gray-600">{description}</p>
+  <a
+    href={link}
+    className="bg-white rounded-lg shadow-md p-5 sm:p-6 hover:shadow-lg transition-shadow min-h-[120px] flex flex-col justify-center"
+  >
+    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{title}</h3>
+    <p className="text-sm sm:text-base text-gray-600">{description}</p>
   </a>
 );
