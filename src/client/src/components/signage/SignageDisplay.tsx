@@ -68,7 +68,11 @@ export const SignageDisplay = () => {
     };
   }, []);
 
-  const { data: signageData, refetch } = useQuery({
+  const {
+    data: signageData,
+    refetch,
+    isLoading,
+  } = useQuery({
     queryKey: ['signageData', shouldRefetch],
     queryFn: async () => {
       const response = await signageApi.getActiveData();
@@ -143,6 +147,19 @@ export const SignageDisplay = () => {
     fallbackContent,
   });
 
+  // Show loading indicator while initially fetching data
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen bg-gray-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          <h1 className="text-4xl font-bold text-white">Loading...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  // Show "No Content" only if data has loaded but there's no content to display
   if (!currentContent) {
     return (
       <div className="w-full h-screen bg-gray-900 flex items-center justify-center">
