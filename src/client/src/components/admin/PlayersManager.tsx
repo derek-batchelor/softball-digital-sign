@@ -183,11 +183,7 @@ export const PlayersManager = () => {
   };
 
   const handleSetWeekendWarrior = (id: number) => {
-    if (
-      confirm('Set this player as Weekend Warrior? This will clear any existing Weekend Warrior.')
-    ) {
-      setWeekendWarriorMutation.mutate(id);
-    }
+    setWeekendWarriorMutation.mutate(id);
   };
 
   const handleCancel = () => {
