@@ -50,11 +50,6 @@ export class PlayersService {
   }
 
   async create(createPlayerDto: CreatePlayerDto): Promise<PlayerEntity> {
-    // If setting this player as weekend warrior, clear others
-    if (createPlayerDto.isWeekendWarrior) {
-      await this.clearWeekendWarrior();
-    }
-
     const player = this.playerRepository.create(createPlayerDto);
     this.calculateDerivedStats(player);
     return this.playerRepository.save(player);
@@ -62,11 +57,6 @@ export class PlayersService {
 
   async update(id: number, updatePlayerDto: UpdatePlayerDto): Promise<PlayerEntity> {
     const player = await this.findOne(id);
-
-    // If setting this player as weekend warrior, clear others
-    if (updatePlayerDto.isWeekendWarrior) {
-      await this.clearWeekendWarrior(id);
-    }
 
     // If photo is being updated and there's an old photo, delete it
     if (
@@ -164,25 +154,8 @@ export class PlayersService {
     return result;
   }
 
-  private async clearWeekendWarrior(exceptId?: number): Promise<void> {
-    if (exceptId) {
-      await this.playerRepository
-        .createQueryBuilder()
-        .update(PlayerEntity)
-        .set({ isWeekendWarrior: false })
-        .where('isWeekendWarrior = :isWW', { isWW: true })
-        .andWhere('id != :id', { id: exceptId })
-        .execute();
-    } else {
-      await this.playerRepository.update({ isWeekendWarrior: true }, { isWeekendWarrior: false });
-    }
-  }
-
   async setWeekendWarrior(id: number): Promise<PlayerEntity> {
     const player = await this.findOne(id);
-
-    // Clear all other weekend warriors
-    await this.clearWeekendWarrior(id);
 
     // Set this player as the weekend warrior
     player.isWeekendWarrior = true;
