@@ -68,4 +68,4 @@ jobs:
           # - dev choice => named preview environment 'dev'
           # - staging choice => Production slot
           # - production choice => Production slot (only via manual dispatch)
-          deployment_environment: ${{ github.event_name == 'workflow_dispatch' && (inputs.deploy_choice == 'dev' && 'dev' || 'production') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'production') || (github.event_name == 'pull_request' && 'dev') }}
+          deployment_environment: ${{ github.event_name == 'workflow_dispatch' && (inputs.deploy_choice == 'dev' && 'dev' || 'Production') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'Production') || (github.event_name == 'pull_request' && 'dev') }}
