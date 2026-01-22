@@ -141,6 +141,11 @@ az ad app federated-credential create `
   --id $sp.appId `
   --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<owner>/<repo>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'
 
+# Add federated credential for dev environment (workflow_dispatch)
+az ad app federated-credential create `
+  --id $sp.appId `
+  --parameters '{\"name\":\"github-workflow_dispatch-dev\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<owner>/<repo>:environment:dev\",\"audiences\":[\"api://AzureADTokenExchange\"]}'
+
 # Save these values as GitHub secrets:
 Write-Host "AZURE_CLIENT_ID: $($sp.appId)"
 Write-Host "AZURE_TENANT_ID: $($sp.tenant)"
