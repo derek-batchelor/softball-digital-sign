@@ -4,9 +4,10 @@ import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { PlayerEntity } from '../../entities';
 import { CreatePlayerDto, UpdatePlayerDto } from '@shared/types';
-import { writeFile, mkdir, unlink } from 'node:fs/promises';
+import { mkdir, unlink } from 'node:fs/promises';
 import { join, isAbsolute } from 'node:path';
 import { existsSync } from 'node:fs';
+import { savePhotoAsWebp } from '../../services/media-optimizer.service';
 
 @Injectable()
 export class PlayersService {
@@ -142,16 +143,9 @@ export class PlayersService {
     await this.ensureUploadDirExists();
     console.log('Upload directory exists:', this.uploadDir);
 
-    const filename = `${Date.now()}-${file.originalname}`;
-    const filepath = join(this.uploadDir, filename);
-    console.log('Writing file to:', filepath);
-
-    await writeFile(filepath, file.buffer);
-    console.log('File written successfully');
-
-    const result = { filePath: `/media/player-photos/${filename}` };
-    console.log('Returning result:', result);
-    return result;
+    const { filePath } = await savePhotoAsWebp(file, this.uploadDir, '/media/player-photos/');
+    console.log('Photo converted to webp and saved at:', filePath);
+    return { filePath };
   }
 
   async setWeekendWarrior(id: number): Promise<PlayerEntity> {

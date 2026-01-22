@@ -7,6 +7,7 @@ import { CreateSignageContentDto, UpdateSignageContentDto, ContentType } from '@
 import { writeFile } from 'node:fs/promises';
 import { join, isAbsolute, extname } from 'node:path';
 import { existsSync } from 'node:fs';
+import { savePhotoAsWebp, ensureDirExists } from '../../services/media-optimizer.service';
 
 @Injectable()
 export class SignageContentService {
@@ -91,14 +92,23 @@ export class SignageContentService {
 
   async saveUploadedFile(file: Express.Multer.File): Promise<{ filePath: string }> {
     console.log('saveUploadedFile called with file:', file ? file.originalname : 'no file');
+    const ext = extname(file.originalname).toLowerCase();
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
 
+    if (imageExtensions.includes(ext)) {
+      const { filePath } = await savePhotoAsWebp(file, this.uploadDir, '/media/');
+      console.log('Image converted to webp and saved at:', filePath);
+      return { filePath };
+    }
+
+    // NOTE: Video optimization with FFmpeg (x264, 720p max) will be implemented later.
+    // For now, save the original video as-is
+    await ensureDirExists(this.uploadDir);
     const filename = `${Date.now()}-${file.originalname}`;
     const filepath = join(this.uploadDir, filename);
-    console.log('Writing file to:', filepath);
-
+    console.log('Writing video file to:', filepath);
     await writeFile(filepath, file.buffer);
-    console.log('File written successfully');
-
+    console.log('Video file written successfully');
     const result = { filePath: `/media/${filename}` };
     console.log('Returning result:', result);
     return result;
