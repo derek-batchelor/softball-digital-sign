@@ -14,21 +14,21 @@ on:
       - 'src/client/**'
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Environment to deploy to'
+      deploy_choice:
+        description: 'Deployment choice (dev, staging, production)'
         required: true
         type: choice
         options:
           - dev
           - staging
           - production
-        default: 'dev'
+        default: 'staging'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'production' || 'dev') }}
+      name: ${{ (github.event_name == 'workflow_dispatch' && inputs.deploy_choice == 'production') && 'production' || 'dev' }}
       url: ${{ steps.deploy.outputs.static_web_app_url }}
 
     steps:
@@ -64,4 +64,8 @@ jobs:
           output_location: '.'
           skip_app_build: true
           production_branch: 'main'
-          deployment_environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'production' || 'staging') }}
+          # SWA slot mapping:
+          # - dev choice => named preview environment 'dev'
+          # - staging choice => Production slot
+          # - production choice => Production slot (only via manual dispatch)
+          deployment_environment: ${{ github.event_name == 'workflow_dispatch' && (inputs.deploy_choice == 'dev' && 'dev' || 'production') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && 'production') || (github.event_name == 'pull_request' && 'dev') }}
