@@ -10,6 +10,7 @@ import { PlayersModule } from './modules/players/players.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { SignageContentModule } from './modules/signage-content/signage-content.module';
 import { SignageModule } from './modules/signage/signage.module';
+import { AuthModule } from './auth/auth.module';
 
 // Gateway & Services
 import { SignageGateway } from './gateways/signage.gateway';
@@ -63,6 +64,7 @@ import { SessionMonitorService } from './services/session-monitor.service';
     SessionsModule,
     SignageContentModule,
     SignageModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [SignageGateway, SessionMonitorService],

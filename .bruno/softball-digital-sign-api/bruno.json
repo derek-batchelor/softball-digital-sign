@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "softball-digital-sign-api",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

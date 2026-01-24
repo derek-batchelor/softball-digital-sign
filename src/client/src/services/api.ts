@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 import {
   ActiveSignageData,
   SignageContent,
@@ -10,12 +10,35 @@ import {
   UpdateSignageContentDto,
 } from '@shared/types';
 import { config } from '../config';
+import { acquireAuthToken } from './authToken';
 
 const api = axios.create({
   baseURL: `${config.apiUrl}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+api.interceptors.request.use(async (requestConfig) => {
+  let headers: AxiosHeaders;
+
+  if (!requestConfig.headers) {
+    headers = new AxiosHeaders();
+  } else if (requestConfig.headers instanceof AxiosHeaders) {
+    headers = requestConfig.headers;
+  } else {
+    headers = new AxiosHeaders(requestConfig.headers);
+  }
+
+  if (!headers.has('Authorization')) {
+    const token = await acquireAuthToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+  }
+
+  requestConfig.headers = headers;
+  return requestConfig;
 });
 
 export const signageApi = {

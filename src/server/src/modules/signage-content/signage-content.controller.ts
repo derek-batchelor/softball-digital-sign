@@ -9,11 +9,15 @@ import {
   ParseIntPipe,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SignageContentService } from './signage-content.service';
 import { CreateSignageContentDto, UpdateSignageContentDto } from '@shared/types';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { ClaimsGuard } from '../../auth/guards/claims.guard';
 
+@UseGuards(JwtAuthGuard, ClaimsGuard)
 @Controller('content')
 export class SignageContentController {
   constructor(private readonly signageContentService: SignageContentService) {}
