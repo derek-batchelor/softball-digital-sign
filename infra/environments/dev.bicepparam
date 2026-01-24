@@ -16,6 +16,12 @@ param ghcrPassword = 'REPLACE_WITH_GHCR_TOKEN'
 //          https://proud-pond-094ce810f-1.eastus2.4.azurestaticapps.net (preview)
 param corsOrigin = 'https://proud-pond-094ce810f.eastus2.4.azurestaticapps.net,https://proud-pond-094ce810f-1.eastus2.4.azurestaticapps.net,https://proud-pond-094ce810f-2.eastus2.4.azurestaticapps.net,https://proud-pond-094ce810f-3.eastus2.4.azurestaticapps.net'
 
+// Backend auth configuration
+param authMetadataUrl = 'https://joebelltrainingdev.ciamlogin.com/b2e17ba3-82a3-463e-8a97-8a053bb2f3db/.well-known/openid-configuration'
+param authAudience = '460bde16-ddf3-49fc-9af1-1f83a982c1cf'
+param authRequiredClaim = 'roles'
+param authRequiredClaimValue = 'Admin'
+
 // SWA SKU
 param swaSku = 'Free'
 

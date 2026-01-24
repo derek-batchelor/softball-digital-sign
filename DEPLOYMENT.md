@@ -114,6 +114,12 @@ AZURE_CONTAINERAPP_NAME=<containerAppName-from-outputs>
 ```
 AZURE_STATIC_WEB_APPS_API_TOKEN=<swa-deployment-token>
 VITE_API_URL=https://<containerAppFqdn-from-outputs>
+VITE_AUTH_AUTHORITY=https://<tenant>.ciamlogin.com/<tenant-id>
+VITE_AUTH_CLIENT_ID=<spa-client-id>
+VITE_AUTH_REDIRECTS=[{"origin":"https://<app-host>","redirectUri":"https://<app-host>","postLogoutRedirectUri":"https://<app-host>"}]
+VITE_AUTH_API_SCOPE=api://<api-app-id>/<scope-name>   # optional if you don't request API access
+VITE_AUTH_REQUIRED_CLAIM=roles
+VITE_AUTH_REQUIRED_CLAIM_VALUE=Admin
 ```
 
 ### Get SWA Deployment Token

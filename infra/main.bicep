@@ -17,6 +17,18 @@ param ghcrPassword string
 @description('CORS origin to allow from frontend (e.g., https://<swa>.azurestaticapps.net)')
 param corsOrigin string
 
+@description('OIDC metadata discovery endpoint used by the backend for token validation')
+param authMetadataUrl string
+
+@description('Audience value that issued tokens must contain')
+param authAudience string
+
+@description('Claim name the backend enforces for admin access')
+param authRequiredClaim string = 'roles'
+
+@description('Claim value required for admin access')
+param authRequiredClaimValue string = 'Admin'
+
 @description('Static Web App SKU (Free or Standard)')
 @allowed([
   'Free'
@@ -269,6 +281,22 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'MEDIA_PATH'
               value: '/mounts/media'
+            }
+            {
+              name: 'AUTH_METADATA_URL'
+              value: authMetadataUrl
+            }
+            {
+              name: 'AUTH_AUDIENCE'
+              value: authAudience
+            }
+            {
+              name: 'AUTH_REQUIRED_CLAIM'
+              value: authRequiredClaim
+            }
+            {
+              name: 'AUTH_REQUIRED_CLAIM_VALUE'
+              value: authRequiredClaimValue
             }
           ]
           volumeMounts: [
