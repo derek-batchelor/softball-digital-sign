@@ -1,7 +1,20 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto, UpdateSessionDto } from '@shared/types';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { ClaimsGuard } from '../../auth/guards/claims.guard';
 
+@UseGuards(JwtAuthGuard, ClaimsGuard)
 @Controller('sessions')
 export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}

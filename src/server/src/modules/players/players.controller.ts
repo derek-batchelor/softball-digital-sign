@@ -10,11 +10,15 @@ import {
   ParseIntPipe,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PlayersService } from './players.service';
 import { CreatePlayerDto, UpdatePlayerDto } from '@shared/types';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { ClaimsGuard } from '../../auth/guards/claims.guard';
 
+@UseGuards(JwtAuthGuard, ClaimsGuard)
 @Controller('players')
 export class PlayersController {
   constructor(private readonly playersService: PlayersService) {}

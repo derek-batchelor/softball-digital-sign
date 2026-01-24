@@ -17,19 +17,26 @@ export const MediaContent = ({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (type === 'video' && videoRef.current) {
-      const handleLoadedMetadata = () => {
-        if (videoRef.current && onVideoDurationDetected) {
-          onVideoDurationDetected(videoRef.current.duration);
-        }
-      };
-
-      videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
-
-      return () => {
-        videoRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      };
+    if (type !== 'video') {
+      return;
     }
+
+    const videoElement = videoRef.current;
+    if (!videoElement) {
+      return;
+    }
+
+    const handleLoadedMetadata = () => {
+      if (onVideoDurationDetected) {
+        onVideoDurationDetected(videoElement.duration);
+      }
+    };
+
+    videoElement.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+    return () => {
+      videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    };
   }, [type, onVideoDurationDetected]);
 
   return (

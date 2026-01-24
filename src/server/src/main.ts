@@ -2,19 +2,26 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, LogLevel } from '@nestjs/common';
 import { AppModule } from './app.module';
 
+function getRequiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
 async function bootstrap() {
-  // Configure logger based on LOG_LEVEL environment variable
-  const logLevel = process.env.LOG_LEVEL || 'log';
+  const logLevelEnv = getRequiredEnv('LOG_LEVEL');
   const validLogLevels: LogLevel[] = ['error', 'warn', 'log', 'debug', 'verbose'];
-  const logger: LogLevel[] = validLogLevels.slice(
-    0,
-    validLogLevels.indexOf(logLevel as LogLevel) + 1,
-  );
+  const levelIndex = validLogLevels.indexOf(logLevelEnv as LogLevel);
+  if (levelIndex < 0) {
+    throw new Error(`Invalid LOG_LEVEL value: ${logLevelEnv}`);
+  }
+  const logger: LogLevel[] = validLogLevels.slice(0, levelIndex + 1);
 
   const app = await NestFactory.create(AppModule, { logger });
 
-  // Enable CORS
-  const corsOriginEnv = process.env.CORS_ORIGIN || 'http://localhost:5173';
+  const corsOriginEnv = getRequiredEnv('CORS_ORIGIN');
   const corsOrigin =
     corsOriginEnv === '*' ? '*' : corsOriginEnv.split(',').map((origin) => origin.trim());
 
@@ -23,7 +30,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Enable validation
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -32,10 +38,14 @@ async function bootstrap() {
     }),
   );
 
-  // API prefix
   app.setGlobalPrefix('api');
 
-  const port = process.env.PORT || 3000;
+  const portEnv = getRequiredEnv('PORT');
+  const port = Number(portEnv);
+  if (Number.isNaN(port)) {
+    throw new TypeError(`PORT must be a number, received: ${portEnv}`);
+  }
+
   await app.listen(port);
   console.log(`Server running on http://localhost:${port}`);
 }

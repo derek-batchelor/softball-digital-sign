@@ -84,7 +84,6 @@ Set the following secrets in your GitHub repository (Settings → Secrets and va
 
 - `AZURE_STATIC_WEB_APPS_API_TOKEN`: Deployment token from SWA (get via portal or CLI)
 - `VITE_API_URL`: Backend API URL (e.g., `https://<containerAppFqdn>`)
-- `VITE_WS_URL`: WebSocket URL (e.g., `wss://<containerAppFqdn>`)
 
 **Get SWA deployment token:**
 
@@ -121,17 +120,17 @@ az ad app federated-credential create `
 
 The deployment produces the following outputs:
 
-| Output                    | Description                             | Usage                                   |
-| ------------------------- | --------------------------------------- | --------------------------------------- |
-| `containerAppFqdn`        | Backend API fully qualified domain name | Set as `VITE_API_URL` and `VITE_WS_URL` |
-| `containerAppName`        | Container App resource name             | GitHub Actions secret                   |
-| `containerAppPrincipalId` | Managed identity principal ID           | Reference/RBAC                          |
-| `managedEnvironmentName`  | ACA environment name                    | Volume mount script                     |
-| `staticWebAppHostname`    | Frontend default hostname               | Update `corsOrigin` parameter           |
-| `storageAccountName`      | Storage account name                    | Volume mount script                     |
-| `fileShareData`           | Data file share name                    | Reference                               |
-| `fileShareMedia`          | Media file share name                   | Reference                               |
-| `logAnalyticsWorkspaceId` | Log Analytics workspace customer ID     | Reference                               |
+| Output                    | Description                             | Usage                         |
+| ------------------------- | --------------------------------------- | ----------------------------- |
+| `containerAppFqdn`        | Backend API fully qualified domain name | Set as `VITE_API_URL`         |
+| `containerAppName`        | Container App resource name             | GitHub Actions secret         |
+| `containerAppPrincipalId` | Managed identity principal ID           | Reference/RBAC                |
+| `managedEnvironmentName`  | ACA environment name                    | Volume mount script           |
+| `staticWebAppHostname`    | Frontend default hostname               | Update `corsOrigin` parameter |
+| `storageAccountName`      | Storage account name                    | Volume mount script           |
+| `fileShareData`           | Data file share name                    | Reference                     |
+| `fileShareMedia`          | Media file share name                   | Reference                     |
+| `logAnalyticsWorkspaceId` | Log Analytics workspace customer ID     | Reference                     |
 
 ## Environment Management
 

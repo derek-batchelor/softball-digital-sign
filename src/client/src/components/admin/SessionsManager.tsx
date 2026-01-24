@@ -4,6 +4,9 @@ import { sessionsApi, playersApi } from '../../services/api';
 import { Session, Player, CreateSessionDto, UpdateSessionDto } from '@shared/types';
 import toast, { Toaster } from 'react-hot-toast';
 import { Modal } from '../shared/Modal';
+import { LoadingState } from '../shared/LoadingState';
+import { ErrorState } from '../shared/ErrorState';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -21,7 +24,13 @@ export const SessionsManager = () => {
   const [debouncedPlayerSearch, setDebouncedPlayerSearch] = useState('');
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
 
-  const { data: sessions, isLoading: sessionsLoading } = useQuery({
+  const {
+    data: sessions,
+    isLoading: sessionsLoading,
+    isError: sessionsError,
+    error: sessionsErrorDetail,
+    refetch: refetchSessions,
+  } = useQuery({
     queryKey: ['sessions'],
     queryFn: async () => {
       const response = await sessionsApi.getAll();
@@ -29,7 +38,13 @@ export const SessionsManager = () => {
     },
   });
 
-  const { data: players, isLoading: playersLoading } = useQuery({
+  const {
+    data: players,
+    isLoading: playersLoading,
+    isError: playersError,
+    error: playersErrorDetail,
+    refetch: refetchPlayers,
+  } = useQuery({
     queryKey: ['players'],
     queryFn: async () => {
       const response = await playersApi.getAll();
@@ -284,13 +299,32 @@ export const SessionsManager = () => {
 
   if (sessionsLoading || playersLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-xl text-gray-600">Loading sessions...</div>
-          </div>
-        </div>
-      </div>
+      <>
+        <LoadingState fullScreen message="Loading sessions..." />
+        <Toaster position="top-right" />
+      </>
+    );
+  }
+
+  if (sessionsError || playersError) {
+    const message = sessionsError
+      ? getApiErrorMessage(sessionsErrorDetail, 'Failed to load sessions')
+      : getApiErrorMessage(playersErrorDetail, 'Failed to load players');
+
+    const handleRetry = () => {
+      if (sessionsError) {
+        refetchSessions();
+      }
+      if (playersError) {
+        refetchPlayers();
+      }
+    };
+
+    return (
+      <>
+        <ErrorState fullScreen message={message} onRetry={handleRetry} />
+        <Toaster position="top-right" />
+      </>
     );
   }
 

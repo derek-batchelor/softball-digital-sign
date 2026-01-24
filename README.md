@@ -12,7 +12,7 @@ A digital signage system for displaying softball player statistics, highlights, 
   - Weekend Warrior: Player spotlight
 - **Auto-rotation**: Content rotates with variable durations and 1s dissolve transitions
 - **Admin Dashboard**: Manage schedules, players, tournaments, stats, and content
-- **Real-time Updates**: WebSocket notifications for session transitions
+- **Automatic Refresh**: Background polling keeps signage data current without manual reloads
 - **Multi-Display Support**: Interactive positioning and scaling for any screen size (Smart TVs, PCs, Mobile)
   - Adjust scale, position, and rotation
   - Settings saved to local storage
@@ -61,6 +61,26 @@ npm run dev
 
 - Client runs on: http://localhost:5173
 - Server runs on: http://localhost:3000
+
+## Authentication
+
+The application uses an Azure External Identities user flow with PKCE for protecting admin routes. Configure the following environment variables to match your tenant settings. All values are required unless marked optional.
+
+### Client (`src/client/.env`)
+
+- `VITE_AUTH_CLIENT_ID` – Application (client) ID from your user flow registration.
+- `VITE_AUTH_AUTHORITY` – Authority URL, for example `https://joebelltrainingdev.ciamlogin.com/<tenant-id>/v2.0`.
+- `VITE_AUTH_API_SCOPE` – Optional API scope to request access tokens (e.g. `api://<api-app-id>/access_as_user`).
+- `VITE_AUTH_REDIRECTS` – JSON array of `{ origin, redirectUri, postLogoutRedirectUri }` objects to pick host-specific callbacks.
+- `VITE_AUTH_REQUIRED_CLAIM` / `VITE_AUTH_REQUIRED_CLAIM_VALUE` – Claim name and value users must possess to reach `/admin` routes. Defaults to `roles=Admin`.
+
+### Server (`src/server/.env`)
+
+- `AUTH_METADATA_URL` – OIDC discovery endpoint used to load issuer and JWKS settings.
+- `AUTH_AUDIENCE` – Audience claim the backend will accept (API app registration ID or URI).
+- `AUTH_REQUIRED_CLAIM` / `AUTH_REQUIRED_CLAIM_VALUE` – Claim gate enforced by the API, matching the client requirement.
+
+All `/admin` UI routes now require a successful sign-in and the configured claim. The same claim check applies to `players`, `sessions`, and `content` API endpoints.
 
 ### Building for Production
 

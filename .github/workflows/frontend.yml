@@ -53,12 +53,17 @@ jobs:
         run: npm ci
 
       - name: Build shared types
-        run: npm run build --workspace=shared/types
+        run: npm run build --workspace=src/shared/types
 
       - name: Build client
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+          VITE_AUTH_AUTHORITY: ${{ secrets.VITE_AUTH_AUTHORITY }}
+          VITE_AUTH_CLIENT_ID: ${{ secrets.VITE_AUTH_CLIENT_ID }}
+          VITE_AUTH_REDIRECTS: ${{ secrets.VITE_AUTH_REDIRECTS }}
+          VITE_AUTH_API_SCOPE: ${{ secrets.VITE_AUTH_API_SCOPE }}
+          VITE_AUTH_REQUIRED_CLAIM: ${{ secrets.VITE_AUTH_REQUIRED_CLAIM }}
+          VITE_AUTH_REQUIRED_CLAIM_VALUE: ${{ secrets.VITE_AUTH_REQUIRED_CLAIM_VALUE }}
         run: npm run build:client
 
       - name: Deploy to Static Web Apps

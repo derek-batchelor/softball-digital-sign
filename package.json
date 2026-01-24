@@ -6,7 +6,7 @@
   "workspaces": [
     "src/client",
     "src/server",
-    "shared/types"
+    "src/shared/types"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join, isAbsolute } from 'node:path';
 
@@ -10,10 +9,7 @@ import { PlayersModule } from './modules/players/players.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { SignageContentModule } from './modules/signage-content/signage-content.module';
 import { SignageModule } from './modules/signage/signage.module';
-
-// Gateway & Services
-import { SignageGateway } from './gateways/signage.gateway';
-import { SessionMonitorService } from './services/session-monitor.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -48,7 +44,6 @@ import { SessionMonitorService } from './services/session-monitor.service';
         };
       })(),
     ),
-    ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath: (() => {
         const mediaPath = process.env.MEDIA_PATH;
@@ -63,8 +58,9 @@ import { SessionMonitorService } from './services/session-monitor.service';
     SessionsModule,
     SignageContentModule,
     SignageModule,
+    AuthModule,
   ],
   controllers: [],
-  providers: [SignageGateway, SessionMonitorService],
+  providers: [],
 })
 export class AppModule {}

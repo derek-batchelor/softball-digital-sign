@@ -1,0 +1,3 @@
+- Update Azure External Identities to set Display Name
+  - Would required a Custom Authentication extension to set attribute based on information returned (https://learn.microsoft.com/en-us/entra/identity-platform/custom-extension-attribute-collection?tabs=start-continue%2Csubmit-modify-collected-values#13-configure-the-http-trigger-for-onattributecollectionsubmit).
+- SQL calls are probably pull far more than they need.

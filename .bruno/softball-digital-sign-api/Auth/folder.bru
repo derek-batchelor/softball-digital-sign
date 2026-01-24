@@ -1,0 +1,26 @@
+meta {
+  name: Auth
+}
+
+auth {
+  mode: oauth2
+}
+
+auth:oauth2 {
+  grant_type: authorization_code
+  callback_url: https://oauth.usebruno.com/callback
+  authorization_url: {{AUTH_ISSUER}}/oauth2/v2.0/authorize
+  access_token_url: {{AUTH_ISSUER}}/oauth2/v2.0/token
+  refresh_token_url: 
+  client_id: {{CLIENT_ID}}
+  client_secret: 
+  scope: openid email profile api://{{AUTH_AUDIENCE}}/Manage.All offline_access
+  state: random-string
+  pkce: true
+  credentials_placement: body
+  credentials_id: credentials
+  token_placement: header
+  token_header_prefix: Bearer
+  auto_fetch_token: true
+  auto_refresh_token: false
+}

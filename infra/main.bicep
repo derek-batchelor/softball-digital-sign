@@ -17,6 +17,18 @@ param ghcrPassword string
 @description('CORS origin to allow from frontend (e.g., https://<swa>.azurestaticapps.net)')
 param corsOrigin string
 
+@description('OIDC metadata discovery endpoint used by the backend for token validation')
+param authMetadataUrl string
+
+@description('Audience value that issued tokens must contain')
+param authAudience string
+
+@description('Claim name the backend enforces for admin access')
+param authRequiredClaim string = 'roles'
+
+@description('Claim value required for admin access')
+param authRequiredClaimValue string = 'Admin'
+
 @description('Static Web App SKU (Free or Standard)')
 @allowed([
   'Free'
@@ -33,6 +45,16 @@ param sqlAdminUsername string = 'sqladmin'
 @secure()
 @description('SQL Server admin password (min 8 chars, must include uppercase, lowercase, number, and special char)')
 param sqlAdminPassword string
+
+@description('Choose SQL compute model for the database (Serverless or DTU Basic)')
+@allowed([
+  'Serverless'
+  'DTU'
+])
+param sqlDbSkuModel string = 'Serverless'
+
+@description('Max vCores for Serverless (General Purpose) when using Serverless model')
+param sqlServerlessVcores int = 2
 
 // Derived names
 var workspaceName = '${namePrefix}-log-${regionCode}'
@@ -107,15 +129,16 @@ resource sqlFirewallRule 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview
 }
 
 // SQL Database (Serverless tier)
-resource sqlDatabase 'Microsoft.Sql/servers/databases@2024-05-01-preview' = {
+// SQL Database (Serverless - General Purpose)
+resource sqlDatabaseServerless 'Microsoft.Sql/servers/databases@2024-05-01-preview' = if (sqlDbSkuModel == 'Serverless') {
   parent: sqlServer
   name: databaseName
   location: location
   sku: {
-    name: 'GP_S_Gen5'  // General Purpose Serverless
+    name: 'GP_S_Gen5'
     tier: 'GeneralPurpose'
     family: 'Gen5'
-    capacity: 2  // 2 vCores
+    capacity: sqlServerlessVcores
   }
   properties: {
     collation: 'SQL_Latin1_General_CP1_CI_AS'
@@ -123,11 +146,31 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2024-05-01-preview' = {
     zoneRedundant: false
     readScale: 'Disabled'
     requestedBackupStorageRedundancy: 'Local'
-    minCapacity: json('0.5')  // Min 0.5 vCores when active
+    minCapacity: json('0.5')
     isLedgerOn: false
     useFreeLimit: true
     freeLimitExhaustionBehavior: 'AutoPause'
     availabilityZone: 'NoPreference'
+  }
+}
+
+// SQL Database (DTU-based Basic $5/mo)
+resource sqlDatabaseDtu 'Microsoft.Sql/servers/databases@2024-05-01-preview' = if (sqlDbSkuModel == 'DTU') {
+  parent: sqlServer
+  name: databaseName
+  location: location
+  sku: {
+    name: 'Basic'
+    tier: 'Basic'
+    capacity: 5
+  }
+  properties: {
+    collation: 'SQL_Latin1_General_CP1_CI_AS'
+    catalogCollation: 'SQL_Latin1_General_CP1_CI_AS'
+    zoneRedundant: false
+    readScale: 'Disabled'
+    requestedBackupStorageRedundancy: 'Local'
+    isLedgerOn: false
   }
 }
 
@@ -239,6 +282,22 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
               name: 'MEDIA_PATH'
               value: '/mounts/media'
             }
+            {
+              name: 'AUTH_METADATA_URL'
+              value: authMetadataUrl
+            }
+            {
+              name: 'AUTH_AUDIENCE'
+              value: authAudience
+            }
+            {
+              name: 'AUTH_REQUIRED_CLAIM'
+              value: authRequiredClaim
+            }
+            {
+              name: 'AUTH_REQUIRED_CLAIM_VALUE'
+              value: authRequiredClaimValue
+            }
           ]
           volumeMounts: [
             {
@@ -293,4 +352,4 @@ output fileShareMedia string = mediaShare.name
 output logAnalyticsWorkspaceId string = law.properties.customerId
 output sqlServerName string = sqlServer.name
 output sqlServerFqdn string = sqlServer.properties.fullyQualifiedDomainName
-output databaseName string = sqlDatabase.name
+output databaseName string = databaseName

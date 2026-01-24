@@ -114,7 +114,12 @@ AZURE_CONTAINERAPP_NAME=<containerAppName-from-outputs>
 ```
 AZURE_STATIC_WEB_APPS_API_TOKEN=<swa-deployment-token>
 VITE_API_URL=https://<containerAppFqdn-from-outputs>
-VITE_WS_URL=wss://<containerAppFqdn-from-outputs>
+VITE_AUTH_AUTHORITY=https://<tenant>.ciamlogin.com/<tenant-id>
+VITE_AUTH_CLIENT_ID=<spa-client-id>
+VITE_AUTH_REDIRECTS=[{"origin":"https://<app-host>","redirectUri":"https://<app-host>","postLogoutRedirectUri":"https://<app-host>"}]
+VITE_AUTH_API_SCOPE=api://<api-app-id>/<scope-name>   # optional if you don't request API access
+VITE_AUTH_REQUIRED_CLAIM=roles
+VITE_AUTH_REQUIRED_CLAIM_VALUE=Admin
 ```
 
 ### Get SWA Deployment Token
@@ -140,6 +145,11 @@ $sp = az ad sp create-for-rbac `
 az ad app federated-credential create `
   --id $sp.appId `
   --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<owner>/<repo>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'
+
+# Add federated credential for dev environment (workflow_dispatch)
+az ad app federated-credential create `
+  --id $sp.appId `
+  --parameters '{\"name\":\"github-workflow_dispatch-dev\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<owner>/<repo>:environment:dev\",\"audiences\":[\"api://AzureADTokenExchange\"]}'
 
 # Save these values as GitHub secrets:
 Write-Host "AZURE_CLIENT_ID: $($sp.appId)"
@@ -174,6 +184,5 @@ docker push ghcr.io/<owner>/softball-digital-sign-server:latest
 
 - [ ] Test file uploads (media)
 - [ ] Verify SQLite database persistence
-- [ ] Test WebSocket connections
 - [ ] Monitor costs in Azure portal
 - [ ] Set up alerts for container app errors
