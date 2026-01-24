@@ -53,12 +53,11 @@ jobs:
         run: npm ci
 
       - name: Build shared types
-        run: npm run build --workspace=shared/types
+        run: npm run build --workspace=src/shared/types
 
       - name: Build client
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
         run: npm run build:client
 
       - name: Deploy to Static Web Apps

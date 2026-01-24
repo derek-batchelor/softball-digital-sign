@@ -4,5 +4,4 @@ export const config = {
   // - In production (Docker with nginx): use relative URL
   // - In production (Static Web Apps): should have VITE_API_URL set
   apiUrl: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : ''),
-  wsUrl: import.meta.env.VITE_WS_URL || (import.meta.env.DEV ? 'http://localhost:3000' : ''),
 } as const;

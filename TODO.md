@@ -1,5 +1,3 @@
-- Move ./shared to ./src/shared
 - Update Azure External Identities to set Display Name
   - Would required a Custom Authentication extension to set attribute based on information returned (https://learn.microsoft.com/en-us/entra/identity-platform/custom-extension-attribute-collection?tabs=start-continue%2Csubmit-modify-collected-values#13-configure-the-http-trigger-for-onattributecollectionsubmit).
-- If Players, Sessions, Content fails to load from server it looks like there is no data but it doesn't warn user.
 - SQL calls are probably pull far more than they need.

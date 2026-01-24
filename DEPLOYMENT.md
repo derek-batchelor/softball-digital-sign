@@ -114,7 +114,6 @@ AZURE_CONTAINERAPP_NAME=<containerAppName-from-outputs>
 ```
 AZURE_STATIC_WEB_APPS_API_TOKEN=<swa-deployment-token>
 VITE_API_URL=https://<containerAppFqdn-from-outputs>
-VITE_WS_URL=wss://<containerAppFqdn-from-outputs>
 ```
 
 ### Get SWA Deployment Token
@@ -179,6 +178,5 @@ docker push ghcr.io/<owner>/softball-digital-sign-server:latest
 
 - [ ] Test file uploads (media)
 - [ ] Verify SQLite database persistence
-- [ ] Test WebSocket connections
 - [ ] Monitor costs in Azure portal
 - [ ] Set up alerts for container app errors

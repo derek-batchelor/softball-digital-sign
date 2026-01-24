@@ -9,21 +9,21 @@ RUN apk add --no-cache python3 make g++
 # Copy package files
 COPY package*.json ./
 COPY src/server/package*.json ./src/server/
-COPY shared/types/package*.json ./shared/types/
+COPY src/shared/types/package*.json ./src/shared/types/
 
 # Install dependencies
-RUN npm install --workspace=src/server --workspace=shared/types
+RUN npm install --workspace=src/server --workspace=src/shared/types
 
 # Copy only necessary source files
-COPY shared/types/src ./shared/types/src
-COPY shared/types/tsconfig.json ./shared/types/
+COPY src/shared/types/src ./src/shared/types/src
+COPY src/shared/types/tsconfig.json ./src/shared/types/
 COPY src/server/src ./src/server/src
 COPY src/server/tsconfig*.json ./src/server/
 COPY src/server/nest-cli.json ./src/server/
 COPY tsconfig.json ./
 
 # Build shared types first
-RUN npm run build --workspace=shared/types
+RUN npm run build --workspace=src/shared/types
 
 # Build the application
 RUN npm run build --workspace=src/server
@@ -39,15 +39,15 @@ RUN apk add --no-cache python3 make g++
 # Copy package files
 COPY package*.json ./
 COPY src/server/package*.json ./src/server/
-COPY shared/types/package*.json ./shared/types/
+COPY src/shared/types/package*.json ./src/shared/types/
 
 # Install production dependencies only
-RUN npm install --workspace=src/server --workspace=shared/types --omit=dev
+RUN npm install --workspace=src/server --workspace=src/shared/types --omit=dev
 
 # Copy built application and shared types
 COPY --from=build /app/src/server/dist ./src/server/dist
-COPY --from=build /app/shared/types/dist ./shared/types/dist
-COPY --from=build /app/shared/types/package.json ./shared/types/package.json
+COPY --from=build /app/src/shared/types/dist ./src/shared/types/dist
+COPY --from=build /app/src/shared/types/package.json ./src/shared/types/package.json
 
 # Create directories for volume mounts
 RUN mkdir -p /app/media /app/data && \

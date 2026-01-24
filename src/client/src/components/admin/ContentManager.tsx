@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { contentApi } from '../../services/api';
 import {
@@ -9,7 +9,10 @@ import {
 } from '@shared/types';
 import toast, { Toaster } from 'react-hot-toast';
 import { Modal } from '../shared/Modal';
+import { LoadingState } from '../shared/LoadingState';
+import { ErrorState } from '../shared/ErrorState';
 import { config } from '../../config';
+import { getApiErrorMessage } from '../../utils/apiError';
 import {
   useReactTable,
   getCoreRowModel,
@@ -29,7 +32,13 @@ export const ContentManager = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [filterText, setFilterText] = useState('');
 
-  const { data: content, isLoading } = useQuery({
+  const {
+    data: content,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['content'],
     queryFn: async () => {
       const response = await contentApi.getAll();
@@ -44,8 +53,8 @@ export const ContentManager = () => {
       setIsFormOpen(false);
       toast.success('Content created successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to create content');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Failed to create content'));
     },
   });
 
@@ -58,19 +67,19 @@ export const ContentManager = () => {
       setIsFormOpen(false);
       toast.success('Content updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to update content');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Failed to update content'));
     },
   });
 
-  const deleteMutation = useMutation({
+  const { mutate: deleteContent } = useMutation({
     mutationFn: (id: number) => contentApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['content'] });
       toast.success('Content deleted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to delete content');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Failed to delete content'));
     },
   });
 
@@ -92,21 +101,24 @@ export const ContentManager = () => {
     }
   };
 
-  const handleEdit = (content: SignageContent) => {
+  const handleEdit = useCallback((content: SignageContent) => {
     setEditingContent(content);
     setUploadedFilePath('');
     setIsFormOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (id: number) => {
-    if (
-      confirm(
-        'Are you sure you want to delete this content? This will also delete the associated file.',
-      )
-    ) {
-      deleteMutation.mutate(id);
-    }
-  };
+  const handleDelete = useCallback(
+    (id: number) => {
+      if (
+        confirm(
+          'Are you sure you want to delete this content? This will also delete the associated file.',
+        )
+      ) {
+        deleteContent(id);
+      }
+    },
+    [deleteContent],
+  );
 
   const handleCancel = () => {
     setIsFormOpen(false);
@@ -131,7 +143,7 @@ export const ContentManager = () => {
       toast.success('File uploaded successfully!');
     } catch (error) {
       console.error('Error uploading file:', error);
-      toast.error('Failed to upload file');
+      toast.error(getApiErrorMessage(error, 'Failed to upload file'));
     } finally {
       setIsUploading(false);
     }
@@ -251,7 +263,7 @@ export const ContentManager = () => {
         },
       },
     ],
-    [],
+    [handleDelete, handleEdit],
   );
 
   const table = useReactTable({
@@ -275,7 +287,25 @@ export const ContentManager = () => {
   });
 
   if (isLoading) {
-    return <div className="p-8">Loading...</div>;
+    return (
+      <>
+        <LoadingState fullScreen message="Loading content..." />
+        <Toaster position="top-right" />
+      </>
+    );
+  }
+
+  if (isError) {
+    return (
+      <>
+        <ErrorState
+          fullScreen
+          message={getApiErrorMessage(error, 'Failed to load content')}
+          onRetry={() => refetch()}
+        />
+        <Toaster position="top-right" />
+      </>
+    );
   }
 
   return (

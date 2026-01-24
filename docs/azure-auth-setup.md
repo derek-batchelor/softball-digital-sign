@@ -44,12 +44,12 @@
 
 ### SPA (`src/client/.env`)
 
-1. `VITE_AZURE_AUTHORITY` → Issuer root, e.g. `https://joebelltrainingdev.ciamlogin.com/b2e17ba3-82a3-463e-8a97-8a053bb2f3db`.
-2. `VITE_AZURE_CLIENT_ID` → SPA client ID.
-3. `VITE_AZURE_REDIRECTS` → JSON array of objects defining origin, redirectUri, and postLogoutRedirectUri.
-4. `VITE_AZURE_API_SCOPE` → `api://460bde16-ddf3-49fc-9af1-1f83a982c1cf/Manage.All`.
-5. `VITE_AZURE_REQUIRED_CLAIM` → `roles`.
-6. `VITE_AZURE_REQUIRED_CLAIM_VALUE` → `Admin`.
+1. `VITE_AUTH_AUTHORITY` → Issuer root, e.g. `https://joebelltrainingdev.ciamlogin.com/b2e17ba3-82a3-463e-8a97-8a053bb2f3db`.
+2. `VITE_AUTH_CLIENT_ID` → SPA client ID.
+3. `VITE_AUTH_REDIRECTS` → JSON array of objects defining origin, redirectUri, and postLogoutRedirectUri.
+4. `VITE_AUTH_API_SCOPE` → `api://460bde16-ddf3-49fc-9af1-1f83a982c1cf/Manage.All`.
+5. `VITE_AUTH_REQUIRED_CLAIM` → `roles`.
+6. `VITE_AUTH_REQUIRED_CLAIM_VALUE` → `Admin`.
 
 ### API (`src/server/.env`)
 

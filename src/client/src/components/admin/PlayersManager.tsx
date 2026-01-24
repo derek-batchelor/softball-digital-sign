@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   useReactTable,
@@ -17,6 +17,9 @@ import toast, { Toaster } from 'react-hot-toast';
 import { Modal } from '../shared/Modal';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { getApiErrorMessage } from '../../utils/apiError';
+import { LoadingState } from '../shared/LoadingState';
+import { ErrorState } from '../shared/ErrorState';
 
 export const PlayersManager = () => {
   const queryClient = useQueryClient();
@@ -32,20 +35,6 @@ export const PlayersManager = () => {
     editingPlayer?.statsStartDate ? new Date(editingPlayer.statsStartDate) : null,
     editingPlayer?.statsEndDate ? new Date(editingPlayer.statsEndDate) : null,
   ]);
-
-  // Calculate last weekend (Saturday and Sunday)
-  // const getLastWeekend = () => {
-  //   const today = new Date();
-  //   const dayOfWeek = today.getDay();
-  //   const lastSaturday = new Date(today);
-  //   lastSaturday.setDate(today.getDate() - dayOfWeek - 1);
-  //   const lastSunday = new Date(lastSaturday);
-  //   lastSunday.setDate(lastSaturday.getDate() + 1);
-  //   return {
-  //     start: lastSaturday.toISOString().split('T')[0],
-  //     end: lastSunday.toISOString().split('T')[0],
-  //   };
-  // };
 
   // Sync date range when editing player changes
   useEffect(() => {
@@ -63,7 +52,13 @@ export const PlayersManager = () => {
     }
   }, [editingPlayer]);
 
-  const { data: players, isLoading } = useQuery({
+  const {
+    data: players,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['players'],
     queryFn: async () => {
       const response = await playersApi.getAll();
@@ -79,8 +74,8 @@ export const PlayersManager = () => {
       setUploadedPhotoPath('');
       toast.success('Player created successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to create player');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Failed to create player'));
     },
   });
 
@@ -94,30 +89,30 @@ export const PlayersManager = () => {
       setUploadedPhotoPath('');
       toast.success('Player updated successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to update player');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Failed to update player'));
     },
   });
 
-  const deleteMutation = useMutation({
+  const { mutate: deletePlayer } = useMutation({
     mutationFn: (id: number) => playersApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
       toast.success('Player deleted successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to delete player');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Failed to delete player'));
     },
   });
 
-  const setWeekendWarriorMutation = useMutation({
+  const { mutate: setWeekendWarrior } = useMutation({
     mutationFn: (id: number) => playersApi.setWeekendWarrior(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] });
       toast.success('Weekend Warrior set successfully!');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Failed to set Weekend Warrior');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, 'Failed to set Weekend Warrior'));
     },
   });
 
@@ -170,21 +165,27 @@ export const PlayersManager = () => {
     }
   };
 
-  const handleEdit = (player: Player) => {
+  const handleEdit = useCallback((player: Player) => {
     setEditingPlayer(player);
     setUploadedPhotoPath('');
     setIsFormOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this player?')) {
-      deleteMutation.mutate(id);
-    }
-  };
+  const handleDelete = useCallback(
+    (id: number) => {
+      if (confirm('Are you sure you want to delete this player?')) {
+        deletePlayer(id);
+      }
+    },
+    [deletePlayer],
+  );
 
-  const handleSetWeekendWarrior = (id: number) => {
-    setWeekendWarriorMutation.mutate(id);
-  };
+  const handleSetWeekendWarrior = useCallback(
+    (id: number) => {
+      setWeekendWarrior(id);
+    },
+    [setWeekendWarrior],
+  );
 
   const handleCancel = () => {
     setIsFormOpen(false);
@@ -209,7 +210,7 @@ export const PlayersManager = () => {
       toast.success('Photo uploaded successfully!');
     } catch (error) {
       console.error('Error uploading photo:', error);
-      toast.error('Failed to upload photo');
+      toast.error(getApiErrorMessage(error, 'Failed to upload photo'));
     } finally {
       setIsUploading(false);
     }
@@ -485,7 +486,7 @@ export const PlayersManager = () => {
         },
       },
     ],
-    [],
+    [handleDelete, handleEdit, handleSetWeekendWarrior],
   );
 
   // Sort players with weekend warrior at the top
@@ -520,7 +521,25 @@ export const PlayersManager = () => {
   });
 
   if (isLoading) {
-    return <div className="p-8">Loading...</div>;
+    return (
+      <>
+        <LoadingState fullScreen message="Loading players..." />
+        <Toaster position="top-right" />
+      </>
+    );
+  }
+
+  if (isError) {
+    return (
+      <>
+        <ErrorState
+          fullScreen
+          message={getApiErrorMessage(error, 'Failed to load players')}
+          onRetry={() => refetch()}
+        />
+        <Toaster position="top-right" />
+      </>
+    );
   }
 
   return (

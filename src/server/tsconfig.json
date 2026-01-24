@@ -23,7 +23,7 @@
     "preserveSymlinks": false,
     "paths": {
       "@shared/types": [
-        "../../shared/types/src"
+        "../shared/types/src"
       ]
     }
   },

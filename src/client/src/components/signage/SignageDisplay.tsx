@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { signageApi } from '../../services/api';
-import { wsService } from '../../services/websocket';
 import { useContentRotation } from '../../hooks/useContentRotation';
 import { useDisplaySettings } from '../../hooks/useDisplaySettings';
 import { PlayerStatsCard } from './PlayerStatsCard';
 import { MediaContent } from './MediaContent';
 import { DisplaySettingsPanel } from '../shared/DisplaySettingsPanel';
+import { LoadingState } from '../shared/LoadingState';
 import { ContentType } from '@shared/types';
 
 export const SignageDisplay = () => {
-  const [shouldRefetch, setShouldRefetch] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showSettings, setShowSettings] = useState(false);
 
@@ -28,77 +27,52 @@ export const SignageDisplay = () => {
   useEffect(() => {
     let pressTimer: NodeJS.Timeout | null = null;
 
-    const handleMouseDown = () => {
-      pressTimer = setTimeout(() => {
-        setShowSettings((prev) => !prev);
-      }, 3000); // 3 second long press
+    const toggleSettings = () => {
+      setShowSettings((prev) => !prev);
     };
 
-    const handleMouseUp = () => {
+    const startPressTimer = () => {
+      pressTimer = setTimeout(toggleSettings, 3000);
+    };
+
+    const clearPressTimer = () => {
       if (pressTimer) {
         clearTimeout(pressTimer);
         pressTimer = null;
       }
     };
 
-    const handleTouchStart = () => {
-      pressTimer = setTimeout(() => {
-        setShowSettings((prev) => !prev);
-      }, 3000); // 3 second long press
+    const globalTarget = globalThis as typeof globalThis & {
+      addEventListener?: Window['addEventListener'];
+      removeEventListener?: Window['removeEventListener'];
     };
 
-    const handleTouchEnd = () => {
-      if (pressTimer) {
-        clearTimeout(pressTimer);
-        pressTimer = null;
-      }
-    };
+    if (!globalTarget.addEventListener || !globalTarget.removeEventListener) {
+      return undefined;
+    }
 
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
+    globalTarget.addEventListener('mousedown', startPressTimer);
+    globalTarget.addEventListener('mouseup', clearPressTimer);
+    globalTarget.addEventListener('touchstart', startPressTimer);
+    globalTarget.addEventListener('touchend', clearPressTimer);
 
     return () => {
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-      if (pressTimer) clearTimeout(pressTimer);
+      globalTarget.removeEventListener('mousedown', startPressTimer);
+      globalTarget.removeEventListener('mouseup', clearPressTimer);
+      globalTarget.removeEventListener('touchstart', startPressTimer);
+      globalTarget.removeEventListener('touchend', clearPressTimer);
+      clearPressTimer();
     };
   }, []);
 
-  const {
-    data: signageData,
-    refetch,
-    isLoading,
-  } = useQuery({
-    queryKey: ['signageData', shouldRefetch],
+  const { data: signageData, isLoading } = useQuery({
+    queryKey: ['signageData'],
     queryFn: async () => {
       const response = await signageApi.getActiveData();
       return response.data;
     },
     refetchInterval: 60000, // Refetch every minute as backup
   });
-
-  useEffect(() => {
-    wsService.connect();
-
-    wsService.onSessionChange(() => {
-      console.log('Session changed, refetching data...');
-      setShouldRefetch((prev: number) => prev + 1);
-      refetch();
-    });
-
-    wsService.onContentUpdate(() => {
-      console.log('Content updated, refetching data...');
-      refetch();
-    });
-
-    return () => {
-      wsService.disconnect();
-    };
-  }, [refetch]);
 
   // Update time every second
   useEffect(() => {
@@ -133,7 +107,7 @@ export const SignageDisplay = () => {
     const ampm = hours >= 12 ? 'PM' : 'AM';
 
     hours = hours % 12;
-    hours = hours ? hours : 12; // 0 should be 12
+    hours = hours || 12; // 0 should be 12
 
     const hh = hours.toString().padStart(2, '0');
     const mm = minutes.toString().padStart(2, '0');
@@ -149,14 +123,7 @@ export const SignageDisplay = () => {
 
   // Show loading indicator while initially fetching data
   if (isLoading) {
-    return (
-      <div className="w-full h-screen bg-gray-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-6">
-          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-          <h1 className="text-4xl font-bold text-white">Loading...</h1>
-        </div>
-      </div>
-    );
+    return <LoadingState fullScreen tone="dark" message="Loading signage..." />;
   }
 
   // Show "No Content" only if data has loaded but there's no content to display

@@ -1,11 +1,11 @@
 import type { Configuration, RedirectRequest } from '@azure/msal-browser';
 
 type RequiredEnvKey =
-  | 'VITE_AZURE_AUTHORITY'
-  | 'VITE_AZURE_CLIENT_ID'
-  | 'VITE_AZURE_REDIRECTS'
-  | 'VITE_AZURE_REQUIRED_CLAIM'
-  | 'VITE_AZURE_REQUIRED_CLAIM_VALUE';
+  | 'VITE_AUTH_AUTHORITY'
+  | 'VITE_AUTH_CLIENT_ID'
+  | 'VITE_AUTH_REDIRECTS'
+  | 'VITE_AUTH_REQUIRED_CLAIM'
+  | 'VITE_AUTH_REQUIRED_CLAIM_VALUE';
 
 type RedirectSettings = {
   origin: string;
@@ -24,34 +24,34 @@ function requireEnvVar(key: RequiredEnvKey): string {
 }
 
 function parseRedirectSettings(): RedirectSettings[] {
-  const rawValue = requireEnvVar('VITE_AZURE_REDIRECTS');
+  const rawValue = requireEnvVar('VITE_AUTH_REDIRECTS');
   let parsed: unknown;
 
   try {
     parsed = JSON.parse(rawValue);
   } catch (error) {
-    throw new Error(`VITE_AZURE_REDIRECTS must be valid JSON. ${(error as Error).message}`);
+    throw new Error(`VITE_AUTH_REDIRECTS must be valid JSON. ${(error as Error).message}`);
   }
 
   if (!Array.isArray(parsed)) {
-    throw new TypeError('VITE_AZURE_REDIRECTS must be a JSON array of redirect settings.');
+    throw new TypeError('VITE_AUTH_REDIRECTS must be a JSON array of redirect settings.');
   }
 
   return parsed.map((entry, index) => {
     if (!entry || typeof entry !== 'object') {
-      throw new Error(`VITE_AZURE_REDIRECTS entry ${index} must be an object.`);
+      throw new Error(`VITE_AUTH_REDIRECTS entry ${index} must be an object.`);
     }
 
     const { origin, redirectUri, postLogoutRedirectUri } = entry as Record<string, unknown>;
 
     if (typeof origin !== 'string' || origin.length === 0) {
-      throw new Error(`VITE_AZURE_REDIRECTS entry ${index} must specify a non-empty origin.`);
+      throw new Error(`VITE_AUTH_REDIRECTS entry ${index} must specify a non-empty origin.`);
     }
     if (typeof redirectUri !== 'string' || redirectUri.length === 0) {
-      throw new Error(`VITE_AZURE_REDIRECTS entry ${index} must specify redirectUri.`);
+      throw new Error(`VITE_AUTH_REDIRECTS entry ${index} must specify redirectUri.`);
     }
     if (typeof postLogoutRedirectUri !== 'string' || postLogoutRedirectUri.length === 0) {
-      throw new Error(`VITE_AZURE_REDIRECTS entry ${index} must specify postLogoutRedirectUri.`);
+      throw new Error(`VITE_AUTH_REDIRECTS entry ${index} must specify postLogoutRedirectUri.`);
     }
 
     return {
@@ -62,13 +62,13 @@ function parseRedirectSettings(): RedirectSettings[] {
   });
 }
 
-const authority = requireEnvVar('VITE_AZURE_AUTHORITY');
-const clientId = requireEnvVar('VITE_AZURE_CLIENT_ID');
+const authority = requireEnvVar('VITE_AUTH_AUTHORITY');
+const clientId = requireEnvVar('VITE_AUTH_CLIENT_ID');
 const redirects = parseRedirectSettings();
-const apiScope = env.VITE_AZURE_API_SCOPE;
+const apiScope = env['VITE_AUTH_API_SCOPE'];
 
-const requiredClaimName = requireEnvVar('VITE_AZURE_REQUIRED_CLAIM');
-const requiredClaimValue = requireEnvVar('VITE_AZURE_REQUIRED_CLAIM_VALUE');
+const requiredClaimName = requireEnvVar('VITE_AUTH_REQUIRED_CLAIM');
+const requiredClaimValue = requireEnvVar('VITE_AUTH_REQUIRED_CLAIM_VALUE');
 
 let hostname: string | undefined;
 
@@ -78,7 +78,7 @@ try {
     throw new Error('Authority URL must include a hostname.');
   }
 } catch (error) {
-  throw new Error(`VITE_AZURE_AUTHORITY must be a valid URL. ${(error as Error).message}`);
+  throw new Error(`VITE_AUTH_AUTHORITY must be a valid URL. ${(error as Error).message}`);
 }
 
 const browserWindow = (globalThis as typeof globalThis & { window?: Window }).window;
@@ -91,7 +91,7 @@ if (origin === undefined) {
 const redirectConfig = redirects.find((entry) => entry.origin === origin);
 
 if (redirectConfig === undefined) {
-  throw new Error(`VITE_AZURE_REDIRECTS does not contain an entry for origin ${origin}.`);
+  throw new Error(`VITE_AUTH_REDIRECTS does not contain an entry for origin ${origin}.`);
 }
 
 const { redirectUri, postLogoutRedirectUri } = redirectConfig;
