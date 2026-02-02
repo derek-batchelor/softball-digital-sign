@@ -22,7 +22,7 @@ az group create --name softball-dev-rg --location eastus
 az deployment group create `
   --resource-group softball-dev-rg `
   --template-file infra/main.bicep `
-  --parameters @infra/environments/dev.bicepparam
+  --parameters infra/environments/dev.bicepparam
 ```
 
 ## Capture Deployment Outputs
