@@ -63,7 +63,7 @@ var managedEnvName = '${namePrefix}-env-${regionCode}'
 var containerAppName = '${namePrefix}-api-${regionCode}'
 var staticSiteName = '${namePrefix}-swa-${regionCode}'
 var sqlServerName = '${namePrefix}-sql-${regionCode}'
-var databaseName = 'softball'
+var databaseName = 'softball2'
 
 // Log Analytics Workspace
 resource law 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {

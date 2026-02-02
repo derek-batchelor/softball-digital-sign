@@ -30,13 +30,15 @@ A digital signage system for displaying softball player statistics, highlights, 
 
 ```
 softball-digital-sign/
+├── docs/              # Reference docs and walkthroughs
+├── infra/             # Bicep templates and deployment scripts
 ├── src/
-│   ├── client/          # React frontend
-│   └── server/          # NestJS backend
-├── shared/
-│   └── types/           # Shared TypeScript types
-├── docker/              # Docker configuration
-└── media/               # Local media storage
+│   ├── client/        # React frontend
+│   ├── server/        # NestJS backend
+│   └── shared/        # Shared TypeScript packages
+├── docker/            # Docker configuration
+├── local/             # Local development media assets
+└── ...
 ```
 
 ## Getting Started

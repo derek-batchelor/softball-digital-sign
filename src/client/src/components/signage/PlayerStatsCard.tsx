@@ -61,7 +61,7 @@ export const PlayerStatsCard = ({ player, photoPath, isWeekendWarrior }: PlayerS
                 key={`player-photo-${player.id}`}
                 src={`${config.apiUrl}${photoPath || player?.photoPath}`}
                 alt={`${player?.firstName} ${player?.lastName}`}
-                className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 lg:w-56 lg:h-56 xl:w-72 xl:h-72 rounded-2xl sm:rounded-3xl object-cover shadow-xl mb-2 sm:mb-2 md:mb-3 lg:mb-4"
+                className="h-32 sm:h-36 md:h-40 lg:h-56 xl:h-72 rounded-2xl sm:rounded-3xl object-cover shadow-xl mb-2 sm:mb-2 md:mb-3 lg:mb-4"
               />
             )}
             <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 mb-0.5 sm:mb-1 text-center">
